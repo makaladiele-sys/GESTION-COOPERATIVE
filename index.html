@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COOP Dashboard — Gestion Coopérative</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════ */
+:root {
+  --vert:     #1E4D2B;
+  --vert-mid: #2B6B3E;
+  --vert-lt:  #E8F5EC;
+  --or:       #C8882A;
+  --or-lt:    #FFF4E0;
+  --rouge:    #C0392B;
+  --rouge-lt: #FFF0EE;
+  --bleu:     #1A4A7A;
+  --bleu-lt:  #EBF3FF;
+  --gris-1:   #F4F2EE;
+  --gris-2:   #E6E3DC;
+  --gris-3:   #9A9490;
+  --gris-4:   #5A5550;
+  --noir:     #1A1714;
+  --blanc:    #FDFCFA;
+  --shadow:   0 2px 12px rgba(26,23,20,.08);
+  --shadow-lg:0 8px 32px rgba(26,23,20,.14);
+  --radius:   10px;
+  --radius-lg:16px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--gris-1);
+  color: var(--noir);
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════
+   LOGIN
+═══════════════════════════════════════ */
+#login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, var(--vert) 0%, #0D2A16 60%, #162310 100%);
+  position: relative;
+  overflow: hidden;
+}
+#login-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 20% 80%, rgba(200,136,42,.18) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(43,107,62,.3) 0%, transparent 40%);
+}
+.login-card {
+  background: var(--blanc);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 2.8rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  z-index: 1;
+}
+.login-logo {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.login-logo .emblem {
+  width: 64px;
+  height: 64px;
+  background: var(--vert);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: .75rem;
+}
+.login-logo h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--vert);
+  letter-spacing: -.5px;
+}
+.login-logo p { font-size: .85rem; color: var(--gris-3); margin-top: .2rem; }
+.form-group { margin-bottom: 1.2rem; }
+.form-group label { display: block; font-size: .82rem; font-weight: 600; color: var(--gris-4); margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .5px; }
+.form-group input, .form-group select {
+  width: 100%; padding: .72rem 1rem;
+  border: 1.5px solid var(--gris-2);
+  border-radius: var(--radius);
+  font-size: .95rem; font-family: inherit;
+  background: var(--blanc);
+  color: var(--noir);
+  transition: border-color .2s;
+}
+.form-group input:focus, .form-group select:focus { outline: none; border-color: var(--vert); }
+.btn-primary {
+  width: 100%;
+  background: var(--vert);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: .82rem;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+  margin-top: .5rem;
+}
+.btn-primary:hover { background: var(--vert-mid); }
+.btn-primary:active { transform: scale(.98); }
+.login-demo { margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid var(--gris-2); }
+.login-demo p { font-size: .8rem; color: var(--gris-3); text-align: center; margin-bottom: .7rem; }
+.demo-btns { display: flex; gap: .5rem; flex-wrap: wrap; }
+.demo-btn {
+  flex: 1; padding: .45rem .6rem;
+  border: 1.5px solid var(--gris-2);
+  background: var(--gris-1);
+  border-radius: 6px;
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--gris-4);
+  transition: all .2s;
+  text-align: center;
+}
+.demo-btn:hover { border-color: var(--vert); color: var(--vert); background: var(--vert-lt); }
+#login-error { color: var(--rouge); font-size: .82rem; text-align: center; margin-top: .6rem; display: none; }
+.supabase-note {
+  margin-top: 1rem;
+  padding: .8rem 1rem;
+  background: var(--or-lt);
+  border: 1px solid #E8C58A;
+  border-radius: 8px;
+  font-size: .78rem;
+  color: #7A5010;
+  line-height: 1.5;
+}
+.supabase-note strong { display: block; margin-bottom: .2rem; }
+
+/* ═══════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════ */
+#app { display: none; height: 100vh; overflow: hidden; flex-direction: row; }
+#app.visible { display: flex; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: var(--vert);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 10;
+}
+.sidebar-header {
+  padding: 1.4rem 1.2rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+.sidebar-header .app-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -.3px;
+}
+.sidebar-header .app-sub {
+  font-size: .72rem;
+  opacity: .65;
+  margin-top: .15rem;
+}
+.sidebar-user {
+  padding: .9rem 1.2rem;
+  background: rgba(0,0,0,.18);
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  font-size: .82rem;
+}
+.user-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--or);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  font-size: .9rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+.user-name { font-weight: 600; }
+.user-role { font-size: .7rem; opacity: .6; }
+.nav-section { padding: .9rem .8rem .4rem; }
+.nav-section-title { font-size: .65rem; font-weight: 700; opacity: .5; text-transform: uppercase; letter-spacing: 1px; padding: 0 .4rem .5rem; }
+.nav-item {
+  display: flex; align-items: center; gap: .65rem;
+  padding: .55rem .9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: .88rem;
+  font-weight: 500;
+  opacity: .75;
+  transition: all .18s;
+  margin-bottom: .08rem;
+}
+.nav-item:hover { background: rgba(255,255,255,.1); opacity: 1; }
+.nav-item.active { background: rgba(255,255,255,.18); opacity: 1; font-weight: 600; }
+.nav-item .icon { font-size: 1rem; width: 20px; text-align: center; }
+.sidebar-footer {
+  margin-top: auto;
+  padding: 1rem 1.2rem;
+  border-top: 1px solid rgba(255,255,255,.1);
+}
+.logout-btn {
+  display: flex; align-items: center; gap: .5rem;
+  font-size: .82rem; opacity: .6;
+  cursor: pointer; padding: .4rem .6rem;
+  border-radius: 6px;
+  transition: opacity .2s;
+}
+.logout-btn:hover { opacity: 1; }
+
+/* MAIN */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.topbar {
+  background: var(--blanc);
+  border-bottom: 1px solid var(--gris-2);
+  padding: .85rem 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.page-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; font-weight: 700; }
+.topbar-right { display: flex; align-items: center; gap: .8rem; }
+.date-badge {
+  font-size: .78rem;
+  color: var(--gris-3);
+  background: var(--gris-1);
+  padding: .3rem .7rem;
+  border-radius: 20px;
+  border: 1px solid var(--gris-2);
+}
+.content { flex: 1; overflow-y: auto; padding: 1.6rem 1.8rem; }
+
+/* ═══════════════════════════════════════
+   COMPONENTS
+═══════════════════════════════════════ */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.kpi-card {
+  background: var(--blanc);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.4rem;
+  box-shadow: var(--shadow);
+  border-top: 3px solid var(--gris-2);
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card.green { border-top-color: var(--vert-mid); }
+.kpi-card.gold { border-top-color: var(--or); }
+.kpi-card.blue { border-top-color: var(--bleu); }
+.kpi-card.red { border-top-color: var(--rouge); }
+.kpi-label { font-size: .73rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--gris-3); margin-bottom: .5rem; }
+.kpi-value { font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 700; line-height: 1; }
+.kpi-sub { font-size: .75rem; color: var(--gris-3); margin-top: .35rem; }
+.kpi-icon { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 2rem; opacity: .1; }
+
+.card {
+  background: var(--blanc);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 1.2rem;
+}
+.card-header {
+  padding: 1rem 1.3rem;
+  border-bottom: 1px solid var(--gris-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.card-title { font-weight: 700; font-size: .95rem; }
+.card-body { padding: 1.2rem 1.3rem; }
+
+/* TABLE */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .87rem; }
+th {
+  text-align: left; padding: .6rem .9rem;
+  font-size: .7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px;
+  color: var(--gris-3); background: var(--gris-1);
+  border-bottom: 1px solid var(--gris-2);
+  white-space: nowrap;
+}
+td { padding: .65rem .9rem; border-bottom: 1px solid var(--gris-2); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--gris-1); }
+.empty-row td { text-align: center; color: var(--gris-3); padding: 2rem; font-size: .9rem; }
+
+/* BADGES */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: .2rem .6rem;
+  border-radius: 20px;
+  font-size: .7rem;
+  font-weight: 700;
+}
+.badge-green  { background: var(--vert-lt); color: var(--vert); }
+.badge-gold   { background: var(--or-lt); color: #7A5010; }
+.badge-blue   { background: var(--bleu-lt); color: var(--bleu); }
+.badge-red    { background: var(--rouge-lt); color: var(--rouge); }
+.badge-gray   { background: var(--gris-2); color: var(--gris-4); }
+
+/* BUTTONS */
+.btn {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .5rem .9rem;
+  border-radius: 8px;
+  font-size: .82rem; font-weight: 600; font-family: inherit;
+  cursor: pointer; border: none;
+  transition: all .18s;
+}
+.btn-sm { padding: .3rem .65rem; font-size: .75rem; }
+.btn-green { background: var(--vert); color: #fff; }
+.btn-green:hover { background: var(--vert-mid); }
+.btn-outline { background: transparent; border: 1.5px solid var(--gris-2); color: var(--gris-4); }
+.btn-outline:hover { border-color: var(--vert); color: var(--vert); }
+.btn-gold { background: var(--or); color: #fff; }
+.btn-gold:hover { background: #A8721A; }
+.btn-red { background: var(--rouge); color: #fff; }
+.btn-red:hover { background: #A0311F; }
+
+/* MODAL */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(26,23,20,.55);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  background: var(--blanc);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+.modal-header {
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid var(--gris-2);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-weight: 700; font-size: 1rem; }
+.modal-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--gris-3); padding: .2rem; }
+.modal-body { padding: 1.3rem 1.5rem; }
+.modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--gris-2); display: flex; justify-content: flex-end; gap: .6rem; }
+
+/* FORM */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+.form-group-inline { margin-bottom: .9rem; }
+.form-group-inline label { display: block; font-size: .78rem; font-weight: 600; color: var(--gris-4); margin-bottom: .3rem; text-transform: uppercase; letter-spacing: .4px; }
+.form-group-inline input,
+.form-group-inline select,
+.form-group-inline textarea {
+  width: 100%; padding: .65rem .9rem;
+  border: 1.5px solid var(--gris-2);
+  border-radius: 8px; font-size: .9rem;
+  font-family: inherit; color: var(--noir);
+  background: var(--blanc);
+  transition: border-color .2s;
+}
+.form-group-inline input:focus,
+.form-group-inline select:focus,
+.form-group-inline textarea:focus { outline: none; border-color: var(--vert); }
+.form-group-inline textarea { min-height: 80px; resize: vertical; }
+
+/* ALERT */
+.alert {
+  padding: .8rem 1rem; border-radius: 8px; font-size: .85rem;
+  margin-bottom: 1rem; display: flex; align-items: flex-start; gap: .6rem;
+}
+.alert-warning { background: var(--or-lt); border: 1px solid #E8C58A; color: #7A5010; }
+.alert-info    { background: var(--bleu-lt); border: 1px solid #BAD3F5; color: var(--bleu); }
+.alert-success { background: var(--vert-lt); border: 1px solid #9DD4AE; color: var(--vert); }
+.alert-danger  { background: var(--rouge-lt); border: 1px solid #F5B8B4; color: var(--rouge); }
+
+/* JOURNAL TABLE */
+.debit  { color: var(--rouge); font-weight: 600; }
+.credit { color: var(--vert-mid); font-weight: 600; }
+
+/* CHART-LIKE PROGRESS */
+.progress-bar-wrap { background: var(--gris-2); border-radius: 4px; height: 8px; overflow: hidden; }
+.progress-bar { height: 100%; border-radius: 4px; background: var(--vert-mid); transition: width .4s; }
+
+/* STATS ROW */
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .9rem; margin-bottom: 1.2rem; }
+.stat-mini { background: var(--blanc); border-radius: var(--radius); padding: .9rem 1.1rem; box-shadow: var(--shadow); }
+.stat-mini .sv { font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 700; }
+.stat-mini .sl { font-size: .73rem; color: var(--gris-3); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-top: .2rem; }
+
+/* BILAN */
+.bilan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+.bilan-col h4 { font-size: .8rem; font-weight: 700; color: var(--gris-3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: .7rem; padding-bottom: .5rem; border-bottom: 2px solid var(--gris-2); }
+.bilan-item { display: flex; justify-content: space-between; font-size: .88rem; padding: .35rem 0; border-bottom: 1px dotted var(--gris-2); }
+.bilan-item.total { font-weight: 700; border-bottom: 2px solid var(--noir); font-size: .95rem; margin-top: .3rem; }
+.bilan-item.sub { padding-left: 1rem; color: var(--gris-4); font-size: .82rem; }
+.amount { font-family: 'Space Grotesk', sans-serif; font-weight: 600; }
+
+/* TABS */
+.tabs { display: flex; gap: .1rem; border-bottom: 2px solid var(--gris-2); margin-bottom: 1.2rem; }
+.tab {
+  padding: .65rem 1.1rem;
+  font-size: .85rem; font-weight: 600;
+  cursor: pointer; color: var(--gris-3);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all .18s;
+}
+.tab:hover { color: var(--vert); }
+.tab.active { color: var(--vert); border-bottom-color: var(--vert); }
+
+/* TOAST */
+.toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: .5rem; }
+.toast {
+  background: var(--noir); color: #fff;
+  padding: .75rem 1.1rem;
+  border-radius: 10px; font-size: .85rem;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn .25s ease;
+  max-width: 320px;
+}
+.toast.success { background: var(--vert); }
+.toast.error   { background: var(--rouge); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* SUPABASE CONFIG BANNER */
+.config-banner {
+  background: var(--or-lt);
+  border: 1.5px dashed var(--or);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  margin-bottom: 1.2rem;
+  font-size: .83rem;
+  color: #7A5010;
+}
+.config-banner strong { display: block; margin-bottom: .3rem; font-size: .9rem; }
+.config-banner code { background: #FFE8B0; padding: .1rem .4rem; border-radius: 4px; font-family: monospace; font-size: .8rem; }
+
+/* SEARCH */
+.search-bar { position: relative; }
+.search-bar input { padding-left: 2.2rem; }
+.search-bar .search-icon { position: absolute; left: .7rem; top: 50%; transform: translateY(-50%); color: var(--gris-3); font-size: .9rem; }
+
+/* XOF format */
+.xof { font-family: 'Space Grotesk', sans-serif; }
+
+/* CONFORMITE */
+.conformite-item { display: flex; align-items: center; gap: .75rem; padding: .75rem 0; border-bottom: 1px solid var(--gris-2); }
+.conformite-item:last-child { border-bottom: none; }
+.conformite-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+.conformite-icon.ok  { background: var(--vert-lt); }
+.conformite-icon.warn{ background: var(--or-lt); }
+.conformite-icon.err { background: var(--rouge-lt); }
+.conformite-text h4 { font-size: .88rem; font-weight: 600; }
+.conformite-text p  { font-size: .75rem; color: var(--gris-3); }
+.conformite-action { margin-left: auto; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .bilan-grid { grid-template-columns: 1fr; }
+  .content { padding: 1rem; }
+  .topbar { padding: .75rem 1rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ LOGIN ═══════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="emblem">🌾</div>
+      <h1>COOP Dashboard</h1>
+      <p>Gestion Coopérative Agricole — Sénégal</p>
+    </div>
+
+    <div id="supabase-warning" class="supabase-note" style="display:none">
+      <strong>⚠️ Configuration Supabase requise</strong>
+      Renseignez votre <code>SUPABASE_URL</code> et <code>SUPABASE_ANON_KEY</code> dans le code (lignes ~490) pour activer la base de données.
+    </div>
+
+    <div class="form-group">
+      <label>Email / Identifiant</label>
+      <input type="email" id="login-email" placeholder="exemple@coopérative.sn" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label>Mot de passe</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" onclick="handleLogin()">Se connecter</button>
+    <div id="login-error">Email ou mot de passe incorrect.</div>
+
+    <div class="login-demo">
+      <p>Démonstration — Accès rapide par rôle</p>
+      <div class="demo-btns">
+        <div class="demo-btn" onclick="demoLogin('directeur')">👔 Directeur</div>
+        <div class="demo-btn" onclick="demoLogin('comptable')">📊 Comptable</div>
+        <div class="demo-btn" onclick="demoLogin('tresorier')">💰 Trésorier</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ APP ═══════════════════════ -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="app-name">🌾 COOP Dashboard</div>
+      <div class="app-sub">Gestion Coopérative Agricole</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="nav-avatar">N</div>
+      <div>
+        <div class="user-name" id="nav-username">Utilisateur</div>
+        <div class="user-role" id="nav-role">Rôle</div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Tableau de bord</div>
+      <div class="nav-item active" onclick="navigate('dashboard')">
+        <span class="icon">📊</span> Dashboard
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Membres & Épargne</div>
+      <div class="nav-item" onclick="navigate('membres')">
+        <span class="icon">👥</span> Membres
+      </div>
+      <div class="nav-item" onclick="navigate('epargne')">
+        <span class="icon">💰</span> Épargne
+      </div>
+      <div class="nav-item" onclick="navigate('prets')">
+        <span class="icon">🏦</span> Prêts & Crédits
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Comptabilité</div>
+      <div class="nav-item" onclick="navigate('journal')">
+        <span class="icon">📒</span> Journal Comptable
+      </div>
+      <div class="nav-item" onclick="navigate('bilan')">
+        <span class="icon">⚖️</span> Bilan OHADA
+      </div>
+      <div class="nav-item" onclick="navigate('conformite')">
+        <span class="icon">✅</span> Conformité
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Activités</div>
+      <div class="nav-item" onclick="navigate('recoltes')">
+        <span class="icon">🌱</span> Récoltes & Stocks
+      </div>
+      <div class="nav-item" onclick="navigate('ventes')">
+        <span class="icon">🛒</span> Ventes
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Gouvernance</div>
+      <div class="nav-item" onclick="navigate('assemblees')">
+        <span class="icon">🏛️</span> Assemblées
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="logout-btn" onclick="logout()">
+        <span>🚪</span> Déconnexion
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="page-title" id="page-title">Dashboard</div>
+      <div class="topbar-right">
+        <div class="date-badge" id="date-display"></div>
+        <button class="btn btn-green btn-sm" id="topbar-action" onclick="topbarAction()" style="display:none">+ Nouveau</button>
+      </div>
+    </div>
+    <div class="content" id="content">
+      <!-- Injected by JS -->
+    </div>
+  </main>
+</div>
+
+<!-- ═══════════════════════ MODAL ═══════════════════════ -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Nouveau</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-green" id="modal-confirm" onclick="confirmModal()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toasts"></div>
+
+<!-- ═══════════════════════ SCRIPT ═══════════════════════ -->
+<script>
+/* ════════════════════════════════════════
+   ⚙️  CONFIGURATION SUPABASE
+   Remplacez ces valeurs par les vôtres
+   depuis https://app.supabase.com
+════════════════════════════════════════ */
+const SUPABASE_URL  = 'https://xeerwmpowlcwdfhhbwez.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhlZXJ3bXBvd2xjd2RmaGhid2V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMjkzNzUsImV4cCI6MjA5NzgwNTM3NX0.mJe6w6XY5NSacutxnLHtz3rQrbEFWORRe-45Nl2S92o';
+/* ════════════════════════════════════════ */
+
+let sbClient = null;
+let DEMO_MODE = true; // toujours vrai si Supabase non configuré
+
+// ─── INIT ──────────────────────────────
+function initSupabase() {
+  if (SUPABASE_URL === 'VOTRE_SUPABASE_URL' || !SUPABASE_URL || !SUPABASE_KEY) {
+    DEMO_MODE = true;
+    document.getElementById('supabase-warning').style.display = 'block';
+    return;
+  }
+  try {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    DEMO_MODE = false;
+  } catch(e) {
+    DEMO_MODE = true;
+  }
+}
+
+// ─── STATE ─────────────────────────────
+let currentUser = null;
+let currentPage = 'dashboard';
+let modalAction = null;
+
+// ─── DEMO DATA ─────────────────────────
+const DEMO_USERS = {
+  directeur: { nom: 'Ndour Yacine', role: 'Directeur', email: 'directeur@coop.sn' },
+  comptable:  { nom: 'Sène Mariam',  role: 'Comptable',  email: 'comptable@coop.sn' },
+  tresorier:  { nom: 'Fall Issa',    role: 'Trésorier',  email: 'tresorier@coop.sn' },
+};
+
+let DEMO_MEMBRES = [
+  { id: 1, numero: 'MB-001', nom: 'Diallo Amadou',    telephone: '77 123 45 67', region: 'Kaolack',   statut: 'actif',   genre: 'M', date_adhesion: '2018-03-15', epargne: 1250000 },
+  { id: 2, numero: 'MB-002', nom: 'Ba Khadija',       telephone: '76 234 56 78', region: 'Fatick',    statut: 'actif',   genre: 'F', date_adhesion: '2020-06-01', epargne: 875000  },
+  { id: 3, numero: 'MB-003', nom: 'Sow Ibrahima',     telephone: '78 345 67 89', region: 'Kaolack',   statut: 'actif',   genre: 'M', date_adhesion: '2019-09-10', epargne: 450000  },
+  { id: 4, numero: 'MB-004', nom: 'Ndiaye Fatou',     telephone: '70 456 78 90', region: 'Diourbel',  statut: 'suspendu',genre: 'F', date_adhesion: '2017-01-20', epargne: 220000  },
+  { id: 5, numero: 'MB-005', nom: 'Gueye Moussa',     telephone: '77 567 89 01', region: 'Thiès',     statut: 'actif',   genre: 'M', date_adhesion: '2021-04-05', epargne: 1800000 },
+  { id: 6, numero: 'MB-006', nom: 'Cissé Aminata',    telephone: '76 678 90 12', region: 'Kaolack',   statut: 'actif',   genre: 'F', date_adhesion: '2022-02-14', epargne: 320000  },
+  { id: 7, numero: 'MB-007', nom: 'Traoré Modou',     telephone: '78 789 01 23', region: 'Kaffrine',  statut: 'actif',   genre: 'M', date_adhesion: '2020-11-30', epargne: 990000  },
+  { id: 8, numero: 'MB-008', nom: 'Sarr Mariama',     telephone: '70 890 12 34', region: 'Fatick',    statut: 'inactif', genre: 'F', date_adhesion: '2016-08-22', epargne: 0       },
+];
+
+let DEMO_PRETS = [
+  { id: 1, membre_id: 1, membre: 'Diallo Amadou', montant: 500000, taux: 8, duree: 12, statut: 'actif',    date_debut: '2024-01-15', objet: 'Achat semences arachide',     rembourse: 175000 },
+  { id: 2, membre_id: 2, membre: 'Ba Khadija',    montant: 250000, taux: 8, duree:  6, statut: 'actif',    date_debut: '2024-03-01', objet: 'Équipement irrigation',        rembourse: 125000 },
+  { id: 3, membre_id: 5, membre: 'Gueye Moussa',  montant: 750000, taux: 9, duree: 18, statut: 'en_attente', date_debut: '2024-06-01', objet: 'Extension exploitation',    rembourse: 0      },
+  { id: 4, membre_id: 3, membre: 'Sow Ibrahima',  montant: 300000, taux: 8, duree: 12, statut: 'solde',    date_debut: '2023-06-01', objet: 'Achat engrais',               rembourse: 300000 },
+  { id: 5, membre_id: 6, membre: 'Cissé Aminata', montant: 150000, taux: 8, duree:  6, statut: 'actif',    date_debut: '2024-04-10', objet: 'Petit matériel agricole',     rembourse: 50000  },
+];
+
+let DEMO_JOURNAL = [
+  { id: 1, date: '2024-06-01', libelle: 'Dépôt épargne — Diallo Amadou', compte_debit: '571000', compte_credit: '161000', montant: 50000,   ref: 'TXN-001', type: 'epargne'  },
+  { id: 2, date: '2024-06-03', libelle: 'Remboursement prêt MB-001',     compte_debit: '161000', compte_credit: '527000', montant: 43750,   ref: 'TXN-002', type: 'pret'     },
+  { id: 3, date: '2024-06-05', libelle: 'Vente arachide — Lot L-2024-01',compte_debit: '411000', compte_credit: '701000', montant: 1250000, ref: 'TXN-003', type: 'vente'    },
+  { id: 4, date: '2024-06-07', libelle: 'Achat engrais fournisseur',      compte_debit: '601000', compte_credit: '401000', montant: 380000,  ref: 'TXN-004', type: 'achat'    },
+  { id: 5, date: '2024-06-10', libelle: 'Cotisation mensuelle membres',   compte_debit: '571000', compte_credit: '461000', montant: 124000,  ref: 'TXN-005', type: 'cotisation'},
+  { id: 6, date: '2024-06-12', libelle: 'Salaire personnel',              compte_debit: '641000', compte_credit: '571000', montant: 450000,  ref: 'TXN-006', type: 'charge'   },
+  { id: 7, date: '2024-06-15', libelle: 'Décaissement prêt Gueye Moussa',compte_debit: '527000', compte_credit: '571000', montant: 750000,  ref: 'TXN-007', type: 'pret'     },
+  { id: 8, date: '2024-06-18', libelle: 'Vente mil — Lot L-2024-02',     compte_debit: '411000', compte_credit: '701000', montant: 680000,  ref: 'TXN-008', type: 'vente'    },
+  { id: 9, date: '2024-06-20', libelle: 'Dépôt épargne — Ba Khadija',    compte_debit: '571000', compte_credit: '161000', montant: 75000,   ref: 'TXN-009', type: 'epargne'  },
+  {id: 10, date: '2024-06-25', libelle: 'Frais transport récoltes',       compte_debit: '624000', compte_credit: '571000', montant: 95000,   ref: 'TXN-010', type: 'charge'   },
+];
+
+let DEMO_RECOLTES = [
+  { id: 1, lot: 'L-2024-01', membre: 'Diallo Amadou', produit: 'Arachide', quantite: 2.5, unite: 't', qualite: 'A', date: '2024-06-01', prix_kg: 500, statut: 'vendu'   },
+  { id: 2, lot: 'L-2024-02', membre: 'Gueye Moussa',  produit: 'Mil',      quantite: 1.8, unite: 't', qualite: 'B', date: '2024-06-03', prix_kg: 220, statut: 'vendu'   },
+  { id: 3, lot: 'L-2024-03', membre: 'Sow Ibrahima',  produit: 'Arachide', quantite: 1.2, unite: 't', qualite: 'A', date: '2024-06-05', prix_kg: 500, statut: 'stocké'  },
+  { id: 4, lot: 'L-2024-04', membre: 'Ba Khadija',    produit: 'Niébé',    quantite: 0.8, unite: 't', qualite: 'A', date: '2024-06-08', prix_kg: 700, statut: 'stocké'  },
+  { id: 5, lot: 'L-2024-05', membre: 'Traoré Modou',  produit: 'Arachide', quantite: 3.1, unite: 't', qualite: 'A', date: '2024-06-12', prix_kg: 500, statut: 'en_cours'},
+];
+
+let DEMO_ASSEMBLEES = [
+  { id: 1, type: 'Ordinaire', date: '2024-06-28', lieu: 'Siège Coopérative, Kaolack', quorum: 50, presents: 189, total: 247, statut: 'planifiée', ordre_jour: 'Rapport 2023, Élection CA' },
+  { id: 2, type: 'Extraordinaire', date: '2024-03-15', lieu: 'Salle polyvalente, Kaolack', quorum: 60, presents: 162, total: 247, statut: 'tenue', ordre_jour: 'Augmentation capital social' },
+];
+
+// ─── UTILS ─────────────────────────────
+const fmt = (n) => new Intl.NumberFormat('fr-SN').format(Math.round(n)) + ' XOF';
+const fmtNum = (n) => new Intl.NumberFormat('fr-SN').format(n);
+const today = () => new Date().toLocaleDateString('fr-SN', { weekday:'short', day:'numeric', month:'long', year:'numeric' });
+
+function toast(msg, type='') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+function openModal(title, bodyHtml, confirmFn, confirmLabel='Enregistrer') {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = bodyHtml;
+  document.getElementById('modal-confirm').textContent = confirmLabel;
+  modalAction = confirmFn;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function confirmModal() { if (modalAction) modalAction(); }
+
+function statut_badge(s) {
+  const map = {
+    actif: 'green', suspendu: 'gold', inactif: 'gray',
+    en_attente: 'gold', solde: 'blue', 'actif': 'green',
+    vendu: 'blue', stocké: 'green', en_cours: 'gold',
+    planifiée: 'gold', tenue: 'green',
+  };
+  const labels = {
+    actif: 'Actif', suspendu: 'Suspendu', inactif: 'Inactif',
+    en_attente: 'En attente', solde: 'Soldé',
+    vendu: 'Vendu', stocké: 'Stocké', en_cours: 'En cours',
+    planifiée: 'Planifiée', tenue: 'Tenue',
+  };
+  return `<span class="badge badge-${map[s]||'gray'}">${labels[s]||s}</span>`;
+}
+
+// ─── AUTH ──────────────────────────────
+initSupabase();
+document.getElementById('date-display').textContent = today();
+
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const err   = document.getElementById('login-error');
+  err.style.display = 'none';
+
+  if (DEMO_MODE) {
+    const roles = Object.keys(DEMO_USERS);
+    const found = roles.find(r => DEMO_USERS[r].email.toLowerCase() === email.toLowerCase());
+    if (found) {
+      loginSuccess(DEMO_USERS[found]);
+    } else {
+      err.textContent = email ? 'Email inconnu. Utilisez les boutons ci-dessous.': 'Utilisez les boutons 👔 Comptable 💰 ci-dessous.';
+      err.style.display = 'block';
+    }
+    return;
+  }
+
+  const pwd = document.getElementById('login-password').value;
+  try {
+    const { data, error } = await sbClient.auth.signInWithPassword({ email, password: pwd });
+    if (error) { err.textContent = 'Email ou mot de passe incorrect.'; err.style.display = 'block'; return; }
+    const { data: profile } = await sbClient.from('app_users').select('*').eq('auth_id', data.user.id).single();
+    loginSuccess(profile || { nom: data.user.email, role: 'Comptable' });
+  } catch(e) {
+    err.textContent = 'Erreur de connexion.';
+    err.style.display = 'block';
+  }
+}
+
+function demoLogin(role) {
+  loginSuccess(DEMO_USERS[role]);
+}
+
+function loginSuccess(user) {
+  currentUser = user;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  document.getElementById('nav-username').textContent = user.nom;
+  document.getElementById('nav-role').textContent     = user.role;
+  document.getElementById('nav-avatar').textContent   = user.nom.charAt(0).toUpperCase();
+  navigate('dashboard');
+}
+
+function logout() {
+  if (sbClient) sbClient.auth.signOut();
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('login-screen').style.display = 'flex';
+  currentUser = null;
+}
+
+// ─── NAVIGATION ────────────────────────
+function navigate(page) {
+  currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.getAttribute('onclick')?.includes(`'${page}'`));
+  });
+  const titles = {
+    dashboard: 'Tableau de bord',
+    membres: 'Gestion des Membres',
+    epargne: 'Épargne',
+    prets: 'Prêts & Crédits',
+    journal: 'Journal Comptable',
+    bilan: 'Bilan OHADA',
+    conformite: 'Conformité & Audit',
+    recoltes: 'Récoltes & Stocks',
+    ventes: 'Ventes',
+    assemblees: 'Assemblées Générales',
+  };
+  document.getElementById('page-title').textContent = titles[page] || page;
+
+  const actionPages = { membres: 'Nouveau Membre', prets: 'Nouvelle Demande', journal: 'Nouvelle Écriture', recoltes: 'Enregistrer Récolte', assemblees: 'Planifier AG' };
+  const btn = document.getElementById('topbar-action');
+  if (actionPages[page]) {
+    btn.style.display = 'inline-flex';
+    btn.textContent = '+ ' + actionPages[page];
+  } else {
+    btn.style.display = 'none';
+  }
+
+  const renders = { dashboard, membres, epargne, prets, journal, bilan, conformite, recoltes, ventes, assemblees };
+  const fn = renders[page];
+  if (fn) fn();
+}
+
+function topbarAction() {
+  const actions = {
+    membres: openNouveauMembre,
+    prets: openNouvelleDemandePret,
+    journal: openNouvelleEcriture,
+    recoltes: openNouvelleRecolte,
+    assemblees: openNouvelleAG,
+  };
+  const fn = actions[currentPage];
+  if (fn) fn();
+}
+
+// ─── PAGES ─────────────────────────────
+// DASHBOARD
+function dashboard() {
+  const totalEpargne = DEMO_MEMBRES.reduce((s, m) => s + m.epargne, 0);
+  const membresActifs = DEMO_MEMBRES.filter(m => m.statut === 'actif').length;
+  const pretsActifs = DEMO_PRETS.filter(p => p.statut === 'actif');
+  const totalPrets = pretsActifs.reduce((s, p) => s + (p.montant - p.rembourse), 0);
+  const recoltesStock = DEMO_RECOLTES.filter(r => r.statut === 'stocké').reduce((s, r) => s + r.quantite, 0);
+  const totalVentes = DEMO_JOURNAL.filter(j => j.type === 'vente').reduce((s, j) => s + j.montant, 0);
+
+  document.getElementById('content').innerHTML = `
+    ${DEMO_MODE ? `<div class="config-banner">
+      <strong>🔧 Mode Démonstration — Données fictives</strong>
+      Pour utiliser votre vraie base de données Supabase, remplacez <code>SUPABASE_URL</code> et <code>SUPABASE_ANON_KEY</code> dans le code source (lignes ~490), puis créez les tables avec le schéma fourni.
+    </div>` : ''}
+
+    <div class="kpi-grid">
+      <div class="kpi-card green">
+        <div class="kpi-label">Épargne Totale</div>
+        <div class="kpi-value xof">${fmt(totalEpargne)}</div>
+        <div class="kpi-sub">↑ +5.2% ce mois</div>
+        <div class="kpi-icon">💰</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Membres Actifs</div>
+        <div class="kpi-value">${membresActifs} <span style="font-size:1rem;color:var(--gris-3)">/ ${DEMO_MEMBRES.length}</span></div>
+        <div class="kpi-sub">${Math.round(membresActifs/DEMO_MEMBRES.length*100)}% du total</div>
+        <div class="kpi-icon">👥</div>
+      </div>
+      <div class="kpi-card gold">
+        <div class="kpi-label">Encours Prêts</div>
+        <div class="kpi-value xof">${fmt(totalPrets)}</div>
+        <div class="kpi-sub">${pretsActifs.length} prêts actifs</div>
+        <div class="kpi-icon">🏦</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Ventes Juin 2024</div>
+        <div class="kpi-value xof">${fmt(totalVentes)}</div>
+        <div class="kpi-sub">${recoltesStock.toFixed(1)}t en stock</div>
+        <div class="kpi-icon">🌾</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📒 Dernières écritures comptables</div>
+          <button class="btn btn-outline btn-sm" onclick="navigate('journal')">Voir tout</button>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Libellé</th><th>Montant</th></tr></thead>
+              <tbody>
+                ${DEMO_JOURNAL.slice(-5).reverse().map(e => `
+                  <tr>
+                    <td>${e.date}</td>
+                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.libelle}</td>
+                    <td class="xof">${fmt(e.montant)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🏦 Prêts en attente d'approbation</div>
+          <button class="btn btn-outline btn-sm" onclick="navigate('prets')">Voir tout</button>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Membre</th><th>Montant</th><th>Statut</th></tr></thead>
+              <tbody>
+                ${DEMO_PRETS.filter(p => p.statut === 'en_attente').map(p => `
+                  <tr>
+                    <td>${p.membre}</td>
+                    <td class="xof">${fmt(p.montant)}</td>
+                    <td>${statut_badge(p.statut)}</td>
+                  </tr>
+                `).join('') || '<tr class="empty-row"><td colspan="3">Aucune demande en attente</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.2rem;margin-top:1.2rem">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🌱 Activité Récoltes récentes</div>
+          <button class="btn btn-outline btn-sm" onclick="navigate('recoltes')">Voir tout</button>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Lot</th><th>Membre</th><th>Produit</th><th>Qté</th><th>Statut</th></tr></thead>
+              <tbody>
+                ${DEMO_RECOLTES.map(r => `
+                  <tr>
+                    <td><code style="font-size:.75rem;background:var(--gris-1);padding:.1rem .4rem;border-radius:4px">${r.lot}</code></td>
+                    <td>${r.membre}</td>
+                    <td>${r.produit}</td>
+                    <td>${r.quantite}t</td>
+                    <td>${statut_badge(r.statut)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">📊 Répartition Épargne</div></div>
+        <div class="card-body">
+          ${[['Kaolack', 0.45], ['Fatick', 0.25], ['Thiès', 0.2], ['Autres', 0.1]].map(([r, pct]) => `
+            <div style="margin-bottom:.9rem">
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:.3rem">
+                <span>${r}</span><span style="font-weight:600">${Math.round(pct*100)}%</span>
+              </div>
+              <div class="progress-bar-wrap">
+                <div class="progress-bar" style="width:${pct*100}%;background:${r==='Kaolack'?'var(--vert-mid)':r==='Fatick'?'var(--or)':r==='Thiès'?'var(--bleu)':'var(--gris-3)'}"></div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// MEMBRES
+function membres() {
+  document.getElementById('content').innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Tous les membres (${DEMO_MEMBRES.length})</div>
+        <div style="display:flex;gap:.6rem;align-items:center">
+          <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Rechercher..." id="membres-search" oninput="filtrerMembres()" style="padding:.45rem .7rem .45rem 2rem;border:1.5px solid var(--gris-2);border-radius:8px;font-size:.85rem;width:220px">
+          </div>
+          <select id="membres-filtre" onchange="filtrerMembres()" style="padding:.45rem .7rem;border:1.5px solid var(--gris-2);border-radius:8px;font-size:.83rem">
+            <option value="">Tous statuts</option>
+            <option value="actif">Actif</option>
+            <option value="suspendu">Suspendu</option>
+            <option value="inactif">Inactif</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>N°</th><th>Nom complet</th><th>Téléphone</th><th>Région</th>
+              <th>Statut</th><th>Épargne</th><th>Adhésion</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="membres-tbody">
+            ${renderMembresRows(DEMO_MEMBRES)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderMembresRows(list) {
+  if (!list.length) return '<tr class="empty-row"><td colspan="8">Aucun membre trouvé</td></tr>';
+  return list.map(m => `
+    <tr>
+      <td><code style="font-size:.75rem;background:var(--gris-1);padding:.1rem .4rem;border-radius:4px">${m.numero}</code></td>
+      <td><strong>${m.nom}</strong><span style="font-size:.72rem;color:var(--gris-3);margin-left:.4rem">${m.genre}</span></td>
+      <td>${m.telephone}</td>
+      <td>${m.region}</td>
+      <td>${statut_badge(m.statut)}</td>
+      <td class="xof" style="font-weight:600">${fmt(m.epargne)}</td>
+      <td style="font-size:.8rem;color:var(--gris-3)">${m.date_adhesion}</td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="voirMembre(${m.id})">Voir</button>
+        <button class="btn btn-sm" style="background:var(--or-lt);color:#7A5010;border:none;cursor:pointer" onclick="editMembre(${m.id})">Éditer</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filtrerMembres() {
+  const q = document.getElementById('membres-search').value.toLowerCase();
+  const f = document.getElementById('membres-filtre').value;
+  const filtered = DEMO_MEMBRES.filter(m =>
+    (!q || m.nom.toLowerCase().includes(q) || m.numero.includes(q) || m.region.toLowerCase().includes(q)) &&
+    (!f || m.statut === f)
+  );
+  document.getElementById('membres-tbody').innerHTML = renderMembresRows(filtered);
+}
+
+function voirMembre(id) {
+  const m = DEMO_MEMBRES.find(x => x.id === id);
+  if (!m) return;
+  const pretsMembre = DEMO_PRETS.filter(p => p.membre_id === id);
+  openModal(`Profil — ${m.nom}`, `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem">
+      <div><div style="font-size:.73rem;color:var(--gris-3);text-transform:uppercase;font-weight:700">Numéro</div><div style="font-weight:700;font-size:1.1rem">${m.numero}</div></div>
+      <div><div style="font-size:.73rem;color:var(--gris-3);text-transform:uppercase;font-weight:700">Statut</div><div>${statut_badge(m.statut)}</div></div>
+      <div><div style="font-size:.73rem;color:var(--gris-3);text-transform:uppercase;font-weight:700">Téléphone</div><div>${m.telephone}</div></div>
+      <div><div style="font-size:.73rem;color:var(--gris-3);text-transform:uppercase;font-weight:700">Région</div><div>${m.region}</div></div>
+      <div><div style="font-size:.73rem;color:var(--gris-3);text-transform:uppercase;font-weight:700">Genre</div><div>${m.genre === 'F' ? '♀ Féminin' : '♂ Masculin'}</div></div>
+      <div><div style="font-size:.73rem;color:var(--gris-3);text-transform:uppercase;font-weight:700">Adhésion</div><div>${m.date_adhesion}</div></div>
+    </div>
+    <div style="background:var(--vert-lt);border-radius:8px;padding:1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:.82rem;color:var(--vert);font-weight:600">💰 Solde Épargne</span>
+      <span style="font-family:'Space Grotesk',sans-serif;font-size:1.3rem;font-weight:700;color:var(--vert)">${fmt(m.epargne)}</span>
+    </div>
+    ${pretsMembre.length ? `
+      <div style="font-size:.78rem;font-weight:700;color:var(--gris-3);text-transform:uppercase;margin-bottom:.5rem">Prêts</div>
+      <table style="width:100%;font-size:.82rem;border-collapse:collapse">
+        <tr style="background:var(--gris-1)"><th style="padding:.4rem .6rem;text-align:left">Objet</th><th style="padding:.4rem .6rem;text-align:right">Montant</th><th style="padding:.4rem .6rem">Statut</th></tr>
+        ${pretsMembre.map(p => `<tr><td style="padding:.4rem .6rem">${p.objet}</td><td style="padding:.4rem .6rem;text-align:right">${fmt(p.montant)}</td><td style="padding:.4rem .6rem">${statut_badge(p.statut)}</td></tr>`).join('')}
+      </table>
+    ` : ''}
+  `, null, 'Fermer');
+  document.getElementById('modal-footer').innerHTML = `<button class="btn btn-green" onclick="closeModal()">Fermer</button>`;
+}
+
+function editMembre(id) {
+  const m = DEMO_MEMBRES.find(x => x.id === id);
+  openModal(`Modifier — ${m.nom}`, `
+    <div class="form-row">
+      <div class="form-group-inline"><label>Nom complet</label><input id="e-nom" value="${m.nom}"></div>
+      <div class="form-group-inline"><label>Téléphone</label><input id="e-tel" value="${m.telephone}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group-inline"><label>Région</label>
+        <select id="e-region">
+          ${['Dakar','Thiès','Kaolack','Fatick','Diourbel','Kaffrine','Ziguinchor','Saint-Louis','Louga','Tambacounda','Kolda','Sédhiou','Matam','Kédougou'].map(r => `<option ${r===m.region?'selected':''}>${r}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group-inline"><label>Statut</label>
+        <select id="e-statut">
+          <option value="actif" ${m.statut==='actif'?'selected':''}>Actif</option>
+          <option value="suspendu" ${m.statut==='suspendu'?'selected':''}>Suspendu</option>
+          <option value="inactif" ${m.statut==='inactif'?'selected':''}>Inactif</option>
+        </select>
+      </div>
+    </div>
+  `, () => {
+    m.nom = document.getElementById('e-nom').value;
+    m.telephone = document.getElementById('e-tel').value;
+    m.region = document.getElementById('e-region').value;
+    m.statut = document.getElementById('e-statut').value;
+    closeModal();
+    membres();
+    toast('Membre mis à jour ✓', 'success');
+  });
+}
+
+function openNouveauMembre() {
+  openModal('Nouveau Membre', `
+    <div class="form-row">
+      <div class="form-group-inline"><label>Nom complet</label><input id="n-nom" placeholder="Prénom Nom"></div>
+      <div class="form-group-inline"><label>Téléphone</label><input id="n-tel" placeholder="7X XXX XX XX"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group-inline"><label>Genre</label>
+        <select id="n-genre"><option value="M">Masculin</option><option value="F">Féminin</option></select>
+      </div>
+      <div class="form-group-inline"><label>Région</label>
+        <select id="n-region">
+          ${['Dakar','Thiès','Kaolack','Fatick','Diourbel','Kaffrine','Ziguinchor','Saint-Louis','Louga','Tambacounda'].map(r => `<option>${r}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group-inline"><label>Date d'adhésion</label><input type="date" id="n-date" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="form-group-inline"><label>Dépôt initial (XOF)</label><input type="number" id="n-depot" placeholder="0" min="0"></div>
+    </div>
+  `, () => {
+    const nom = document.getElementById('n-nom').value.trim();
+    if (!nom) { toast('Nom requis', 'error'); return; }
+    const newId = Math.max(...DEMO_MEMBRES.map(m => m.id)) + 1;
+    const newNum = 'MB-' + String(newId).padStart(3, '0');
+    DEMO_MEMBRES.push({
+      id: newId, numero: newNum,
+      nom, telephone: document.getElementById('n-tel').value,
+      region: document.getElementById('n-region').value,
+      genre: document.getElementById('n-genre').value,
+      statut: 'actif',
+      date_adhesion: document.getElementById('n-date').value,
+      epargne: parseInt(document.getElementById('n-depot').value) || 0,
+    });
+    closeModal(); membres(); toast(`Membre ${nom} créé (${newNum}) ✓`, 'success');
+  }, 'Créer Membre');
+}
+
+// ÉPARGNE
+function epargne() {
+  const totalEpargne = DEMO_MEMBRES.reduce((s, m) => s + m.epargne, 0);
+  const mActifs = DEMO_MEMBRES.filter(m => m.statut === 'actif');
+  document.getElementById('content').innerHTML = `
+    <div class="stats-row">
+      <div class="stat-mini"><div class="sv xof">${fmt(totalEpargne)}</div><div class="sl">Épargne totale</div></div>
+      <div class="stat-mini"><div class="sv">${mActifs.length}</div><div class="sl">Épargnants actifs</div></div>
+      <div class="stat-mini"><div class="sv xof">${fmt(totalEpargne/mActifs.length)}</div><div class="sl">Épargne moyenne</div></div>
+      <div class="stat-mini"><div class="sv" style="color:var(--or)">6%</div><div class="sl">Taux intérêt annuel</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Comptes Épargne</div>
+        <button class="btn btn-green btn-sm" onclick="openDepotRetrait()">+ Dépôt / Retrait</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Membre</th><th>N° Membre</th><th>Région</th><th>Solde</th><th>Statut</th><th>Actions</th></tr></thead>
+          <tbody>
+            ${DEMO_MEMBRES.sort((a,b) => b.epargne - a.epargne).map(m => `
+              <tr>
+                <td><strong>${m.nom}</strong></td>
+                <td><code style="font-size:.75rem;background:var(--gris-1);padding:.1rem .4rem;border-radius:4px">${m.numero}</code></td>
+                <td>${m.region}</td>
+                <td style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:${m.epargne>0?'var(--vert)':'var(--rouge)'}">${fmt(m.epargne)}</td>
+                <td>${statut_badge(m.statut)}</td>
+                <td>
+                  <button class="btn btn-sm btn-green" onclick="openDepotRetraitMembre(${m.id})">Transact.</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function openDepotRetrait() { openDepotRetraitMembre(null); }
+function openDepotRetraitMembre(membreId) {
+  openModal('Dépôt / Retrait Épargne', `
+    <div class="form-group-inline">
+      <label>Membre</label>
+      <select id="dr-membre">
+        ${DEMO_MEMBRES.filter(m=>m.statut==='actif').map(m => `<option value="${m.id}" ${m.id===membreId?'selected':''}>${m.nom} (${m.numero})</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group-inline">
+        <label>Type</label>
+        <select id="dr-type">
+          <option value="depot">Dépôt</option>
+          <option value="retrait">Retrait</option>
+        </select>
+      </div>
+      <div class="form-group-inline">
+        <label>Montant (XOF)</label>
+        <input type="number" id="dr-montant" placeholder="0" min="0">
+      </div>
+    </div>
+    <div class="form-group-inline">
+      <label>Motif (optionnel)</label>
+      <input id="dr-motif" placeholder="Cotisation mensuelle...">
+    </div>
+  `, () => {
+    const mid = parseInt(document.getElementById('dr-membre').value);
+    const type = document.getElementById('dr-type').value;
+    const montant = parseInt(document.getElementById('dr-montant').value) || 0;
+    if (!montant) { toast('Montant requis', 'error'); return; }
+    const m = DEMO_MEMBRES.find(x => x.id === mid);
+    if (type === 'retrait' && montant > m.epargne) { toast('Solde insuffisant', 'error'); return; }
+    m.epargne += type === 'depot' ? montant : -montant;
+    // Ajouter au journal
+    DEMO_JOURNAL.push({
+      id: DEMO_JOURNAL.length+1,
+      date: new Date().toISOString().split('T')[0],
+      libelle: `${type==='depot'?'Dépôt':'Retrait'} épargne — ${m.nom}`,
+      compte_debit: type==='depot' ? '571000' : '161000',
+      compte_credit: type==='depot' ? '161000' : '571000',
+      montant, ref: 'TXN-'+String(DEMO_JOURNAL.length+1).padStart(3,'0'),
+      type: 'epargne',
+    });
+    closeModal(); epargne();
+    toast(`${type==='depot'?'Dépôt':'Retrait'} de ${fmt(montant)} effectué ✓`, 'success');
+  }, 'Valider');
+}
+
+// PRÊTS
+function prets() {
+  const encours = DEMO_PRETS.filter(p=>p.statut==='actif').reduce((s,p)=>s+(p.montant-p.rembourse),0);
+  const enAttente = DEMO_PRETS.filter(p=>p.statut==='en_attente').length;
+  document.getElementById('content').innerHTML = `
+    <div class="stats-row">
+      <div class="stat-mini"><div class="sv xof">${fmt(encours)}</div><div class="sl">Encours total</div></div>
+      <div class="stat-mini"><div class="sv" style="color:var(--or)">${enAttente}</div><div class="sl">En attente approbation</div></div>
+      <div class="stat-mini"><div class="sv">${DEMO_PRETS.filter(p=>p.statut==='actif').length}</div><div class="sl">Prêts actifs</div></div>
+      <div class="stat-mini"><div class="sv" style="color:var(--bleu)">${DEMO_PRETS.filter(p=>p.statut==='solde').length}</div><div class="sl">Prêts soldés</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">Tous les prêts</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Membre</th><th>Objet</th><th>Montant</th><th>Taux</th><th>Durée</th><th>Remboursé</th><th>Statut</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            ${DEMO_PRETS.map(p => {
+              const pct = Math.round(p.rembourse/p.montant*100);
+              return `
+              <tr>
+                <td><strong>${p.membre}</strong></td>
+                <td style="font-size:.82rem;color:var(--gris-4)">${p.objet}</td>
+                <td class="xof">${fmt(p.montant)}</td>
+                <td>${p.taux}%</td>
+                <td>${p.duree} mois</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:.5rem;min-width:120px">
+                    <div class="progress-bar-wrap" style="flex:1"><div class="progress-bar" style="width:${pct}%"></div></div>
+                    <span style="font-size:.75rem;color:var(--gris-3)">${pct}%</span>
+                  </div>
+                </td>
+                <td>${statut_badge(p.statut)}</td>
+                <td>
+                  ${p.statut==='en_attente' ? `
+                    <button class="btn btn-sm btn-green" onclick="approuverPret(${p.id})">✓ Approuver</button>
+                    <button class="btn btn-sm btn-red" style="margin-top:2px" onclick="refuserPret(${p.id})">✕ Refuser</button>
+                  ` : p.statut==='actif' ? `
+                    <button class="btn btn-sm btn-outline" onclick="rembourserPret(${p.id})">Rembourser</button>
+                  ` : '—'}
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function approuverPret(id) {
+  const p = DEMO_PRETS.find(x=>x.id===id);
+  p.statut = 'actif';
+  DEMO_JOURNAL.push({ id: DEMO_JOURNAL.length+1, date: new Date().toISOString().split('T')[0], libelle: `Décaissement prêt — ${p.membre}`, compte_debit: '527000', compte_credit: '571000', montant: p.montant, ref: 'TXN-'+String(DEMO_JOURNAL.length+1).padStart(3,'0'), type: 'pret' });
+  prets(); toast(`Prêt de ${p.membre} approuvé ✓`, 'success');
+}
+function refuserPret(id) { DEMO_PRETS.splice(DEMO_PRETS.findIndex(x=>x.id===id),1); prets(); toast('Demande refusée', 'error'); }
+function rembourserPret(id) {
+  const p = DEMO_PRETS.find(x=>x.id===id);
+  const mensualite = Math.round(p.montant/p.duree);
+  p.rembourse = Math.min(p.rembourse + mensualite, p.montant);
+  if (p.rembourse >= p.montant) p.statut = 'solde';
+  DEMO_JOURNAL.push({ id: DEMO_JOURNAL.length+1, date: new Date().toISOString().split('T')[0], libelle: `Remboursement prêt — ${p.membre}`, compte_debit: '161000', compte_credit: '527000', montant: mensualite, ref: 'TXN-'+String(DEMO_JOURNAL.length+1).padStart(3,'0'), type: 'pret' });
+  prets(); toast(`Remboursement de ${fmt(mensualite)} enregistré ✓`, 'success');
+}
+
+function openNouvelleDemandePret() {
+  openModal('Nouvelle Demande de Prêt', `
+    <div class="form-group-inline">
+      <label>Membre demandeur</label>
+      <select id="np-membre">
+        ${DEMO_MEMBRES.filter(m=>m.statut==='actif').map(m=>`<option value="${m.id}">${m.nom} (${m.numero})</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group-inline"><label>Montant (XOF)</label><input type="number" id="np-montant" placeholder="500000" min="0"></div>
+      <div class="form-group-inline"><label>Durée (mois)</label><input type="number" id="np-duree" placeholder="12" min="1" max="60"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group-inline"><label>Taux annuel (%)</label><input type="number" id="np-taux" value="8" step="0.5"></div>
+      <div class="form-group-inline"><label>Date début</label><input type="date" id="np-date" value="${new Date().toISOString().split('T')[0]}"></div>
+    </div>
+    <div class="form-group-inline">
+      <label>Objet du prêt</label>
+      <input id="np-objet" placeholder="Achat semences, équipements...">
+    </div>
+  `, () => {
+    const membreId = parseInt(document.getElementById('np-membre').value);
+    const membre = DEMO_MEMBRES.find(m=>m.id===membreId);
+    const montant = parseInt(document.getElementById('np-montant').value)||0;
+    if (!montant) { toast('Montant requis', 'error'); return; }
+    DEMO_PRETS.push({
+      id: DEMO_PRETS.length+1,
+      membre_id: membreId,
+      membre: membre.nom,
+      montant,
+      taux: parseFloat(document.getElementById('np-taux').value)||8,
+      duree: parseInt(document.getElementById('np-duree').value)||12,
+      statut: 'en_attente',
+      date_debut: document.getElementById('np-date').value,
+      objet: document.getElementById('np-objet').value||'Non précisé',
+      rembourse: 0,
+    });
+    closeModal(); prets(); toast('Demande de prêt soumise — en attente d\'approbation', 'success');
+  }, 'Soumettre Demande');
+}
+
+// JOURNAL
+function journal() {
+  const totalDebit = DEMO_JOURNAL.reduce((s,j)=>s+j.montant,0);
+  document.getElementById('content').innerHTML = `
+    <div class="alert alert-info">
+      ℹ️ Journal conforme SYSCOA/OHADA — Chaque écriture est immutable. Total mouvements : <strong>${fmt(totalDebit)}</strong>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📒 Journal des écritures (Juin 2024)</div>
+        <div style="display:flex;gap:.5rem">
+          <select id="j-filtre" onchange="filtrerJournal()" style="padding:.4rem .7rem;border:1.5px solid var(--gris-2);border-radius:8px;font-size:.82rem">
+            <option value="">Toutes catégories</option>
+            <option value="epargne">Épargne</option>
+            <option value="pret">Prêts</option>
+            <option value="vente">Ventes</option>
+            <option value="achat">Achats</option>
+            <option value="charge">Charges</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Réf</th><th>Date</th><th>Libellé</th><th>Cpt Débit</th><th>Cpt Crédit</th><th class="debit">Débit</th><th class="credit">Crédit</th></tr>
+          </thead>
+          <tbody id="journal-tbody">
+            ${renderJournalRows(DEMO_JOURNAL)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderJournalRows(list) {
+  return list.slice().reverse().map(e => `
+    <tr>
+      <td><code style="font-size:.72rem;background:var(--gris-1);padding:.1rem .35rem;border-radius:4px">${e.ref}</code></td>
+      <td style="font-size:.82rem;color:var(--gris-4)">${e.date}</td>
+      <td>${e.libelle}</td>
+      <td style="font-family:monospace;font-size:.82rem">${e.compte_debit}</td>
+      <td style="font-family:monospace;font-size:.82rem">${e.compte_credit}</td>
+      <td class="debit xof">${fmt(e.montant)}</td>
+      <td class="credit xof">${fmt(e.montant)}</td>
+    </tr>
+  `).join('') || '<tr class="empty-row"><td colspan="7">Aucune écriture</td></tr>';
+}
+
+function filtrerJournal() {
+  const f = document.getElementById('j-filtre').value;
+  const filtered = f ? DEMO_JOURNAL.filter(j=>j.type===f) : DEMO_JOURNAL;
+  document.getElementById('journal-tbody').innerHTML = renderJournalRows(filtered);
+}
+
+function openNouvelleEcriture() {
+  openModal('Nouvelle Écriture Comptable', `
+    <div class="alert alert-warning">⚠️ Attention : les écritures sont immutables une fois validées.</div>
+    <div class="form-row">
+      <div class="form-group-inline"><label>Date</label><input type="date" id="ej-date" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="form-group-inline"><label>Référence</label><input id="ej-ref" value="TXN-${String(DEMO_JOURNAL.length+1).padStart(3,'0')}" readonly style="background:var(--gris-1)"></div>
+    </div>
+    <div class="form-group-inline"><label>Libellé</label><input id="ej-lib" placeholder="Description de l'opération"></div>
+    <div class="form-row">
+      <div class="form-group-inline">
+        <label>Compte Débit (SYSCOA)</label>
+        <select id="ej-debit">
+          <option value="411000">411 — Clients</option>
+          <option value="571000">571 — Caisse</option>
+          <option value="527000">527 — Prêts accordés</option>
+          <option value="601000">601 — Achats marchandises</option>
+          <option value="624000">624 — Transports</option>
+          <option value="641000">641 — Salaires</option>
+          <option value="161000">161 — Dépôts épargne membres</option>
+        </select>
+      </div>
+      <div class="form-group-inline">
+        <label>Compte Crédit (SYSCOA)</label>
+        <select id="ej-credit">
+          <option value="701000">701 — Ventes</option>
+          <option value="571000">571 — Caisse</option>
+          <option value="401000">401 — Fournisseurs</option>
+          <option value="161000">161 — Dépôts épargne membres</option>
+          <option value="461000">461 — Cotisations membres</option>
+          <option value="527000">527 — Prêts accordés</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group-inline"><label>Montant (XOF)</label><input type="number" id="ej-montant" placeholder="0" min="0"></div>
+      <div class="form-group-inline">
+        <label>Catégorie</label>
+        <select id="ej-type">
+          <option value="epargne">Épargne</option>
+          <option value="pret">Prêt</option>
+          <option value="vente">Vente</option>
+          <option value="achat">Achat</option>
+          <option value="charge">Charge</option>
+          <option value="cotisation">Cotisation</option>
+        </select>
+      </div>
+    </div>
+  `, () => {
+    const lib = document.getElementById('ej-lib').value.trim();
+    const montant = parseInt(document.getElementById('ej-montant').value)||0;
+    if (!lib || !montant) { toast('Libellé et montant requis', 'error'); return; }
+    DEMO_JOURNAL.push({
+      id: DEMO_JOURNAL.length+1,
+      date: document.getElementById('ej-date').value,
+      libelle: lib,
+      compte_debit: document.getElementById('ej-debit').value,
+      compte_credit: document.getElementById('ej-credit').value,
+      montant,
+      ref: 'TXN-'+String(DEMO_JOURNAL.length+1).padStart(3,'0'),
+      type: document.getElementById('ej-type').value,
+    });
+    closeModal(); journal(); toast('Écriture enregistrée ✓', 'success');
+  }, 'Valider Écriture');
+}
+
+// BILAN
+function bilan() {
+  const totalActif = 52500000;
+  const totalPassif = 52500000;
+  document.getElementById('content').innerHTML = `
+    <div class="alert alert-info">ℹ️ Bilan arrêté au 30 juin 2024 — Normes OHADA/SYSCOA</div>
+
+    <div class="card" style="margin-bottom:1.2rem">
+      <div class="card-header">
+        <div class="card-title">⚖️ Bilan Comptable — Juin 2024</div>
+        <button class="btn btn-outline btn-sm" onclick="toast('Export PDF disponible en version connectée Supabase')">⬇ Exporter PDF</button>
+      </div>
+      <div class="card-body">
+        <div class="bilan-grid">
+          <div>
+            <h4>ACTIF</h4>
+            <div class="bilan-item"><span>Actif Immobilisé</span><span class="amount">${fmt(18200000)}</span></div>
+            <div class="bilan-item sub"><span>Immob. corporelles</span><span>${fmt(15000000)}</span></div>
+            <div class="bilan-item sub"><span>Immob. financières</span><span>${fmt(3200000)}</span></div>
+            <div class="bilan-item" style="margin-top:.6rem"><span>Actif Circulant</span><span class="amount">${fmt(29800000)}</span></div>
+            <div class="bilan-item sub"><span>Stocks produits agricoles</span><span>${fmt(8400000)}</span></div>
+            <div class="bilan-item sub"><span>Créances membres (prêts)</span><span>${fmt(12600000)}</span></div>
+            <div class="bilan-item sub"><span>Créances clients</span><span>${fmt(4800000)}</span></div>
+            <div class="bilan-item sub"><span>Autres créances</span><span>${fmt(4000000)}</span></div>
+            <div class="bilan-item" style="margin-top:.6rem"><span>Trésorerie</span><span class="amount">${fmt(4500000)}</span></div>
+            <div class="bilan-item sub"><span>Caisse</span><span>${fmt(1200000)}</span></div>
+            <div class="bilan-item sub"><span>Banques</span><span>${fmt(3300000)}</span></div>
+            <div class="bilan-item total"><span>TOTAL ACTIF</span><span class="amount">${fmt(totalActif)}</span></div>
+          </div>
+          <div>
+            <h4>PASSIF</h4>
+            <div class="bilan-item"><span>Capitaux Propres</span><span class="amount">${fmt(22800000)}</span></div>
+            <div class="bilan-item sub"><span>Capital social (parts)</span><span>${fmt(15000000)}</span></div>
+            <div class="bilan-item sub"><span>Réserves légales</span><span>${fmt(4200000)}</span></div>
+            <div class="bilan-item sub"><span>Résultat exercice</span><span>${fmt(3600000)}</span></div>
+            <div class="bilan-item" style="margin-top:.6rem"><span>Dettes à Long Terme</span><span class="amount">${fmt(8200000)}</span></div>
+            <div class="bilan-item sub"><span>Emprunts bancaires</span><span>${fmt(8200000)}</span></div>
+            <div class="bilan-item" style="margin-top:.6rem"><span>Dettes à Court Terme</span><span class="amount">${fmt(21500000)}</span></div>
+            <div class="bilan-item sub"><span>Dépôts épargne membres</span><span>${fmt(14850000)}</span></div>
+            <div class="bilan-item sub"><span>Fournisseurs</span><span>${fmt(3200000)}</span></div>
+            <div class="bilan-item sub"><span>Dettes fiscales</span><span>${fmt(1850000)}</span></div>
+            <div class="bilan-item sub"><span>Autres dettes</span><span>${fmt(1600000)}</span></div>
+            <div class="bilan-item total"><span>TOTAL PASSIF</span><span class="amount">${fmt(totalPassif)}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem">
+      <div class="card">
+        <div class="card-header"><div class="card-title">📊 Ratios Financiers OHADA</div></div>
+        <div class="card-body">
+          ${[
+            ['Ratio de liquidité', 34300000/21500000, 1, 'Actif CT / Passif CT', '>1'],
+            ['Ratio d\'endettement', (8200000+21500000)/22800000, 1.5, 'Dettes totales / CP', '<1.5'],
+            ['Ratio de solvabilité', totalActif/29700000, 1.5, 'Actif total / Dettes', '>1.5'],
+            ['ROE (Rentabilité)', 3600000/22800000*100, null, 'Résultat / Capitaux propres', ''],
+          ].map(([label, val, seuil, desc, norm]) => {
+            const pct = seuil ? Math.min((val/seuil)*100, 100) : Math.min(val*10, 100);
+            const ok = seuil ? (label.includes('endettement') ? val <= seuil : val >= seuil) : true;
+            return `
+              <div style="margin-bottom:1rem">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">
+                  <span style="font-size:.85rem;font-weight:600">${label}</span>
+                  <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:${ok?'var(--vert)':'var(--rouge)'}">${typeof val==='number'&&val<100?val.toFixed(2)+(seuil?'x':'%'):val.toFixed(1)+'%'}</span>
+                </div>
+                <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%;background:${ok?'var(--vert-mid)':'var(--rouge)'}"></div></div>
+                <div style="font-size:.72rem;color:var(--gris-3);margin-top:.2rem">${desc} ${norm?'(norme: '+norm+')':''}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">📈 Compte de Résultat</div></div>
+        <div class="card-body">
+          <div class="bilan-item"><span style="font-weight:600">PRODUITS</span><span></span></div>
+          <div class="bilan-item sub"><span>Ventes produits agricoles</span><span>${fmt(28500000)}</span></div>
+          <div class="bilan-item sub"><span>Intérêts sur prêts</span><span>${fmt(1250000)}</span></div>
+          <div class="bilan-item sub"><span>Cotisations membres</span><span>${fmt(1480000)}</span></div>
+          <div class="bilan-item sub"><span>Autres produits</span><span>${fmt(320000)}</span></div>
+          <div class="bilan-item" style="font-weight:700;background:var(--vert-lt);padding:.5rem;border-radius:6px"><span>Total Produits</span><span class="amount credit">${fmt(31550000)}</span></div>
+          <div style="margin-top:.8rem"></div>
+          <div class="bilan-item"><span style="font-weight:600">CHARGES</span><span></span></div>
+          <div class="bilan-item sub"><span>Achats intrants agricoles</span><span>${fmt(12400000)}</span></div>
+          <div class="bilan-item sub"><span>Frais personnel</span><span>${fmt(8200000)}</span></div>
+          <div class="bilan-item sub"><span>Intérêts épargne (6%)</span><span>${fmt(3800000)}</span></div>
+          <div class="bilan-item sub"><span>Charges diverses</span><span>${fmt(3550000)}</span></div>
+          <div class="bilan-item" style="font-weight:700;background:var(--rouge-lt);padding:.5rem;border-radius:6px"><span>Total Charges</span><span class="amount debit">${fmt(27950000)}</span></div>
+          <div style="margin-top:.8rem;padding:.7rem;background:var(--vert-lt);border-radius:8px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-weight:700;color:var(--vert)">RÉSULTAT NET</span>
+            <span style="font-family:'Space Grotesk',sans-serif;font-size:1.2rem;font-weight:700;color:var(--vert)">${fmt(3600000)}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// CONFORMITÉ
+function conformite() {
+  const checks = [
+    { status:'ok',   icon:'✅', title:'Registre du Commerce (RCCM)', desc:'À jour — Renouvellement valide jusqu\'en mars 2025', action:null },
+    { status:'ok',   icon:'✅', title:'Assemblée Générale annuelle', desc:'AG planifiée le 28/06/2024 — Convocations envoyées J-8', action:null },
+    { status:'warn', icon:'⚠️', title:'Déclaration TVA — Juin 2024', desc:'Échéance le 15 juillet 2024 — À préparer', action:'Préparer déclaration' },
+    { status:'ok',   icon:'✅', title:'Bilan OHADA transmis', desc:'Bilan 2023 déposé à temps — Commissaire signataire', action:null },
+    { status:'warn', icon:'⚠️', title:'Cotisations CNSS personnels', desc:'Délai de versement dépassé de 3 jours — Régulariser', action:'Régulariser' },
+    { status:'ok',   icon:'✅', title:'Plan comptable SYSCOA', desc:'5 niveaux de comptes actifs — Aucune anomalie détectée', action:null },
+    { status:'err',  icon:'❌', title:'Audit interne trimestriel', desc:'Rapport Q1 2024 non finalisé — En retard de 2 semaines', action:'Lancer audit' },
+    { status:'ok',   icon:'✅', title:'Licences et agréments', desc:'Agrément coopérative DASP à jour — Valide 2026', action:null },
+  ];
+
+  const scores = { ok: checks.filter(c=>c.status==='ok').length, warn: checks.filter(c=>c.status==='warn').length, err: checks.filter(c=>c.status==='err').length };
+  const score = Math.round(scores.ok/checks.length*100);
+
+  document.getElementById('content').innerHTML = `
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:1.2rem;margin-bottom:1.2rem;align-items:center">
+      <div class="card" style="margin:0;padding:1.5rem 2rem;text-align:center;min-width:160px">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:3rem;font-weight:700;color:${score>=80?'var(--vert)':score>=60?'var(--or)':'var(--rouge)'}">
+          ${score}%
+        </div>
+        <div style="font-size:.8rem;color:var(--gris-3);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Score Conformité</div>
+        <div style="margin-top:.7rem;display:flex;gap:.4rem;justify-content:center;font-size:.78rem">
+          <span style="color:var(--vert)">✅ ${scores.ok}</span>
+          <span style="color:var(--or)">⚠️ ${scores.warn}</span>
+          <span style="color:var(--rouge)">❌ ${scores.err}</span>
+        </div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-body">
+          <div style="font-size:.78rem;font-weight:700;color:var(--gris-3);text-transform:uppercase;margin-bottom:.5rem">Calendrier Légal — Prochaines échéances</div>
+          ${[
+            ['15 juillet 2024', 'Déclaration TVA mensuelle (DGID)', 'warn'],
+            ['28 juin 2024',    'Assemblée Générale ordinaire',    'ok'],
+            ['31 juillet 2024', 'Rapport audit interne Q2 2024',   'err'],
+            ['31 août 2024',    'Paiement CNSS trimestre',         'ok'],
+          ].map(([d,l,s])=>`
+            <div style="display:flex;align-items:center;gap:.7rem;padding:.4rem 0;border-bottom:1px solid var(--gris-2)">
+              <span class="badge badge-${s==='ok'?'green':s==='warn'?'gold':'red'}">${d}</span>
+              <span style="font-size:.85rem">${l}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">✅ Checklist Conformité OHADA / Sénégal</div></div>
+      <div class="card-body">
+        ${checks.map(c => `
+          <div class="conformite-item">
+            <div class="conformite-icon ${c.status}"><span>${c.icon}</span></div>
+            <div class="conformite-text">
+              <h4>${c.title}</h4>
+              <p>${c.desc}</p>
+            </div>
+            ${c.action ? `<div class="conformite-action"><button class="btn btn-sm btn-outline" onclick="toast('${c.action} — fonctionnalité disponible avec Supabase connecté')">${c.action}</button></div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// RÉCOLTES
+function recoltes() {
+  const stockTotal = DEMO_RECOLTES.filter(r=>r.statut==='stocké').reduce((s,r)=>s+r.quantite,0);
+  const valStock = DEMO_RECOLTES.filter(r=>r.statut==='stocké').reduce((s,r)=>s+(r.quantite*1000*r.prix_kg),0);
+  document.getElementById('content').innerHTML = `
+    <div class="stats-row">
+      <div class="stat-mini"><div class="sv">${stockTotal.toFixed(1)}t</div><div class="sl">Stock disponible</div></div>
+      <div class="stat-mini"><div class="sv xof">${fmt(valStock)}</div><div class="sl">Valeur stock</div></div>
+      <div class="stat-mini"><div class="sv">${DEMO_RECOLTES.length}</div><div class="sl">Lots enregistrés</div></div>
+      <div class="stat-mini"><div class="sv" style="color:var(--bleu)">${DEMO_RECOLTES.filter(r=>r.statut==='vendu').length}</div><div class="sl">Lots vendus</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">🌱 Lots de Récolte</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>N° Lot</th><th>Membre</th><th>Produit</th><th>Quantité</th><th>Qualité</th><th>Prix/kg</th><th>Valeur</th><th>Statut</th><th>Date</th></tr></thead>
+          <tbody>
+            ${DEMO_RECOLTES.map(r => `
+              <tr>
+                <td><code style="font-size:.75rem;background:var(--gris-1);padding:.1rem .4rem;border-radius:4px">${r.lot}</code></td>
+                <td>${r.membre}</td>
+                <td><strong>${r.produit}</strong></td>
+                <td>${r.quantite}t</td>
+                <td><span class="badge ${r.qualite==='A'?'badge-green':'badge-gold'}">${r.qualite}</span></td>
+                <td>${fmtNum(r.prix_kg)} XOF/kg</td>
+                <td class="xof">${fmt(r.quantite*1000*r.prix_kg)}</td>
+                <td>${statut_badge(r.statut)}</td>
+                <td style="font-size:.8rem;color:var(--gris-3)">${r.date}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function openNouvelleRecolte() {
+  openModal('Enregistrer Récolte', `
+    <div class="form-row">
+      <div class="form-group-inline">
+        <label>Membre producteur</label>
+        <select id="nr-membre">
+          ${DEMO_MEMBRES.filter(m=>m.statut==='actif').map(m=>`<option value="${m.nom}">${m.nom}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group-inline">
+        <label>Produit</label>
+        <select id="nr-produit">
+          <option>Arachide</option><option>Mil</option><option>Niébé</option><option>Maïs</option><option>Sorgho</option><option>Coton</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group-inline"><label>Quantité (tonnes)</label><input type="number" id="nr-qte" placeholder="0.0" step="0.1" min="0"></div>
+      <div class="form-group-inline">
+        <label>Qualité</label>
+        <select id="nr-qualite"><option value="A">Qualité A (supérieure)</option><option value="B">Qualité B (standard)</option><option value="C">Qualité C (inférieure)</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group-inline"><label>Prix de référence (XOF/kg)</label><input type="number" id="nr-prix" placeholder="500"></div>
+      <div class="form-group-inline"><label>Date récolte</label><input type="date" id="nr-date" value="${new Date().toISOString().split('T')[0]}"></div>
+    </div>
+  `, () => {
+    const qte = parseFloat(document.getElementById('nr-qte').value)||0;
+    if (!qte) { toast('Quantité requise', 'error'); return; }
+    const newLot = 'L-2024-' + String(DEMO_RECOLTES.length+1).padStart(2,'0');
+    DEMO_RECOLTES.push({
+      id: DEMO_RECOLTES.length+1,
+      lot: newLot,
+      membre: document.getElementById('nr-membre').value,
+      produit: document.getElementById('nr-produit').value,
+      quantite: qte,
+      unite: 't',
+      qualite: document.getElementById('nr-qualite').value,
+      date: document.getElementById('nr-date').value,
+      prix_kg: parseInt(document.getElementById('nr-prix').value)||500,
+      statut: 'stocké',
+    });
+    closeModal(); recoltes(); toast(`Lot ${newLot} enregistré ✓`, 'success');
+  }, 'Enregistrer');
+}
+
+// VENTES
+function ventes() {
+  const ventesJournal = DEMO_JOURNAL.filter(j=>j.type==='vente');
+  const totalVentes = ventesJournal.reduce((s,j)=>s+j.montant,0);
+  document.getElementById('content').innerHTML = `
+    <div class="stats-row">
+      <div class="stat-mini"><div class="sv xof">${fmt(totalVentes)}</div><div class="sl">CA Juin 2024</div></div>
+      <div class="stat-mini"><div class="sv">${ventesJournal.length}</div><div class="sl">Factures émises</div></div>
+      <div class="stat-mini"><div class="sv xof">${fmt(totalVentes/ventesJournal.length)}</div><div class="sl">Panier moyen</div></div>
+      <div class="stat-mini"><div class="sv" style="color:var(--vert)">+12.4%</div><div class="sl">vs juin 2023</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🛒 Ventes — Juin 2024</div>
+        <button class="btn btn-green btn-sm" onclick="openNouvelleVente()">+ Nouvelle Vente</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Réf</th><th>Date</th><th>Libellé</th><th>Montant</th></tr></thead>
+          <tbody>
+            ${ventesJournal.slice().reverse().map(v=>`
+              <tr>
+                <td><code style="font-size:.75rem;background:var(--gris-1);padding:.1rem .4rem;border-radius:4px">${v.ref}</code></td>
+                <td style="font-size:.82rem">${v.date}</td>
+                <td>${v.libelle}</td>
+                <td class="credit xof">${fmt(v.montant)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function openNouvelleVente() {
+  const lotsStock = DEMO_RECOLTES.filter(r=>r.statut==='stocké');
+  openModal('Enregistrer Vente', `
+    <div class="form-group-inline">
+      <label>Lot vendu</label>
+      <select id="nv-lot">
+        ${lotsStock.map(r=>`<option value="${r.id}">${r.lot} — ${r.produit} ${r.quantite}t (${fmtNum(r.prix_kg)} XOF/kg)</option>`).join('')}
+        <option value="">Vente hors lot</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group-inline"><label>Montant (XOF)</label><input type="number" id="nv-montant" placeholder="0"></div>
+      <div class="form-group-inline"><label>Date</label><input type="date" id="nv-date" value="${new Date().toISOString().split('T')[0]}"></div>
+    </div>
+    <div class="form-group-inline"><label>Acheteur</label><input id="nv-acheteur" placeholder="Nom de l'acheteur / commerçant"></div>
+  `, () => {
+    const montant = parseInt(document.getElementById('nv-montant').value)||0;
+    if (!montant) { toast('Montant requis', 'error'); return; }
+    const lotId = parseInt(document.getElementById('nv-lot').value);
+    const lot = DEMO_RECOLTES.find(r=>r.id===lotId);
+    if (lot) lot.statut = 'vendu';
+    const acheteur = document.getElementById('nv-acheteur').value||'Acheteur';
+    DEMO_JOURNAL.push({
+      id: DEMO_JOURNAL.length+1,
+      date: document.getElementById('nv-date').value,
+      libelle: `Vente ${lot?lot.produit+' '+lot.lot:''} — ${acheteur}`,
+      compte_debit: '411000',
+      compte_credit: '701000',
+      montant,
+      ref: 'TXN-'+String(DEMO_JOURNAL.length+1).padStart(3,'0'),
+      type: 'vente',
+    });
+    closeModal(); ventes(); toast('Vente enregistrée ✓', 'success');
+  }, 'Enregistrer Vente');
+}
+
+// ASSEMBLÉES
+function assemblees() {
+  document.getElementById('content').innerHTML = `
+    <div class="card">
+      <div class="card-header"><div class="card-title">🏛️ Assemblées Générales</div></div>
+      <div class="card-body" style="padding:0">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Type</th><th>Date</th><th>Lieu</th><th>Quorum</th><th>Présents</th><th>Statut</th><th>Actions</th></tr></thead>
+            <tbody>
+              ${DEMO_ASSEMBLEES.map(a=>`
+                <tr>
+                  <td><strong>AG ${a.type}</strong></td>
+                  <td>${a.date}</td>
+                  <td style="font-size:.82rem;color:var(--gris-4)">${a.lieu}</td>
+                  <td>${a.quorum}%</td>
+                  <td>
+                    ${a.statut==='tenue' ? `
+                      <span style="font-weight:600">${a.presents}/${a.total}</span>
+                      <div class="progress-bar-wrap" style="margin-top:.2rem;width:80px">
+                        <div class="progress-bar" style="width:${Math.round(a.presents/a.total*100)}%"></div>
+                      </div>
+                    ` : '—'}
+                  </td>
+                  <td>${statut_badge(a.statut)}</td>
+                  <td>
+                    <button class="btn btn-outline btn-sm" onclick="voirAG(${a.id})">Détails</button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function voirAG(id) {
+  const a = DEMO_ASSEMBLEES.find(x=>x.id===id);
+  openModal(`AG ${a.type} — ${a.date}`, `
+    <div style="display:grid;gap:.8rem">
+      <div style="display:flex;gap:.7rem;flex-wrap:wrap">
+        <span class="badge badge-${a.statut==='tenue'?'green':'gold'}">${a.statut}</span>
+        <span style="font-size:.85rem;color:var(--gris-4)">📍 ${a.lieu}</span>
+      </div>
+      <div style="background:var(--gris-1);border-radius:8px;padding:.8rem">
+        <div style="font-size:.75rem;font-weight:700;color:var(--gris-3);text-transform:uppercase;margin-bottom:.4rem">Ordre du Jour</div>
+        <div style="font-size:.88rem">${a.ordre_jour}</div>
+      </div>
+      ${a.statut==='tenue' ? `
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.7rem;text-align:center">
+          <div style="background:var(--vert-lt);padding:.8rem;border-radius:8px">
+            <div style="font-size:1.3rem;font-weight:700;color:var(--vert)">${a.presents}</div>
+            <div style="font-size:.72rem;color:var(--gris-3)">Présents</div>
+          </div>
+          <div style="background:var(--gris-1);padding:.8rem;border-radius:8px">
+            <div style="font-size:1.3rem;font-weight:700">${a.total}</div>
+            <div style="font-size:.72rem;color:var(--gris-3)">Total membres</div>
+          </div>
+          <div style="background:${Math.round(a.presents/a.total*100)>=a.quorum?'var(--vert-lt)':'var(--rouge-lt)'};padding:.8rem;border-radius:8px">
+            <div style="font-size:1.3rem;font-weight:700;color:${Math.round(a.presents/a.total*100)>=a.quorum?'var(--vert)':'var(--rouge)'}">${Math.round(a.presents/a.total*100)}%</div>
+            <div style="font-size:.72rem;color:var(--gris-3)">Quorum (min ${a.quorum}%)</div>
+          </div>
+        </div>
+      ` : `<div class="alert alert-warning">⚠️ AG à venir — Convocations à envoyer 8 jours avant la date</div>`}
+    </div>
+  `, null, 'Fermer');
+  document.getElementById('modal-footer').innerHTML = `<button class="btn btn-green" onclick="closeModal()">Fermer</button>`;
+}
+
+function openNouvelleAG() {
+  openModal('Planifier Assemblée Générale', `
+    <div class="form-row">
+      <div class="form-group-inline">
+        <label>Type AG</label>
+        <select id="ag-type"><option>Ordinaire</option><option>Extraordinaire</option></select>
+      </div>
+      <div class="form-group-inline"><label>Date</label><input type="date" id="ag-date"></div>
+    </div>
+    <div class="form-group-inline"><label>Lieu</label><input id="ag-lieu" placeholder="Siège coopérative, Kaolack..."></div>
+    <div class="form-row">
+      <div class="form-group-inline"><label>Quorum requis (%)</label><input type="number" id="ag-quorum" value="50" min="1" max="100"></div>
+      <div class="form-group-inline"><label>Total membres</label><input type="number" id="ag-total" value="${DEMO_MEMBRES.length}" readonly style="background:var(--gris-1)"></div>
+    </div>
+    <div class="form-group-inline"><label>Ordre du Jour</label><textarea id="ag-oj" placeholder="Points à traiter..."></textarea></div>
+  `, () => {
+    const date = document.getElementById('ag-date').value;
+    if (!date) { toast('Date requise', 'error'); return; }
+    DEMO_ASSEMBLEES.push({
+      id: DEMO_ASSEMBLEES.length+1,
+      type: document.getElementById('ag-type').value,
+      date,
+      lieu: document.getElementById('ag-lieu').value||'À définir',
+      quorum: parseInt(document.getElementById('ag-quorum').value)||50,
+      total: DEMO_MEMBRES.length,
+      presents: 0,
+      statut: 'planifiée',
+      ordre_jour: document.getElementById('ag-oj').value||'À définir',
+    });
+    closeModal(); assemblees(); toast('Assemblée planifiée ✓ — Convocations à envoyer', 'success');
+  }, 'Planifier AG');
+}
+
+// ─── SUPABASE SQL SCHEMA ────────────────
+// Le schéma SQL est disponible dans le fichier schema-database-interactive.html
+// Créez ces tables dans votre projet Supabase pour activer la persistance :
+//
+// CREATE TABLE app_users ( id UUID PRIMARY KEY DEFAULT gen_random_uuid(), auth_id UUID REFERENCES auth.users, nom VARCHAR(255), email VARCHAR(255), role VARCHAR(50), created_at TIMESTAMP DEFAULT NOW() );
+// CREATE TABLE membres ( id UUID PRIMARY KEY DEFAULT gen_random_uuid(), numero_membre VARCHAR(50) UNIQUE NOT NULL, nom_complet VARCHAR(255) NOT NULL, telephone VARCHAR(20), region VARCHAR(100), statut VARCHAR(20) DEFAULT 'actif', genre CHAR(1), date_adhesion DATE DEFAULT CURRENT_DATE, epargne_solde BIGINT DEFAULT 0, created_at TIMESTAMP DEFAULT NOW() );
+// CREATE TABLE transactions_epargne ( id UUID PRIMARY KEY DEFAULT gen_random_uuid(), membre_id UUID REFERENCES membres(id), type VARCHAR(20), montant BIGINT NOT NULL, motif TEXT, created_by UUID, created_at TIMESTAMP DEFAULT NOW() );
+// CREATE TABLE demandes_credit ( id UUID PRIMARY KEY DEFAULT gen_random_uuid(), membre_id UUID REFERENCES membres(id), montant BIGINT NOT NULL, taux DECIMAL, duree INTEGER, objet TEXT, statut VARCHAR(30) DEFAULT 'en_attente', date_debut DATE, created_at TIMESTAMP DEFAULT NOW() );
+// CREATE TABLE journal_comptable ( id UUID PRIMARY KEY DEFAULT gen_random_uuid(), date DATE NOT NULL, libelle TEXT NOT NULL, compte_debit VARCHAR(10), compte_credit VARCHAR(10), montant BIGINT NOT NULL, reference VARCHAR(50), type_operation VARCHAR(30), created_by UUID, created_at TIMESTAMP DEFAULT NOW() );
+// CREATE TABLE recoltes ( id UUID PRIMARY KEY DEFAULT gen_random_uuid(), lot_numero VARCHAR(50) UNIQUE, membre_id UUID REFERENCES membres(id), produit VARCHAR(100), quantite DECIMAL, unite VARCHAR(10), qualite CHAR(1), prix_kg INTEGER, statut VARCHAR(30) DEFAULT 'stocké', date_recolte DATE, created_at TIMESTAMP DEFAULT NOW() );
+// CREATE TABLE assemblees ( id UUID PRIMARY KEY DEFAULT gen_random_uuid(), type VARCHAR(30), date_ag DATE, lieu TEXT, quorum_requis INTEGER DEFAULT 50, statut VARCHAR(30) DEFAULT 'planifiée', ordre_jour TEXT, created_at TIMESTAMP DEFAULT NOW() );
+//
+// ACTIVER RLS: ALTER TABLE membres ENABLE ROW LEVEL SECURITY;
+// (répéter pour chaque table, puis créer des policies selon les rôles)
+
+// ─── START ─────────────────────────────
+window.addEventListener('load', () => {
+  document.getElementById('date-display').textContent = today();
+});
+</script>
+</body>
+</html>

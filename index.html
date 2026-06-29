@@ -553,6 +553,7 @@ tr:hover td { background: var(--gris-1); }
       </div>
     </div>
 
+    <div id="role-badge" style="padding:.5rem 1.2rem;font-size:.72rem;text-align:center;"></div>
     <div class="nav-section">
       <div class="nav-section-title">Tableau de bord</div>
       <div class="nav-item active" onclick="navigate('dashboard')">
@@ -616,6 +617,7 @@ tr:hover td { background: var(--gris-1); }
       <div class="page-title" id="page-title">Dashboard</div>
       <div class="topbar-right">
         <div class="date-badge" id="date-display"></div>
+        <span id="topbar-role-badge" style="font-size:.73rem;font-weight:700;padding:.3rem .7rem;border-radius:20px;background:var(--gris-1);border:1px solid var(--gris-2);color:var(--gris-4)"></span>
         <button class="btn btn-green btn-sm" id="topbar-action" onclick="topbarAction()" style="display:none">+ Nouveau</button>
       </div>
     </div>
@@ -805,6 +807,24 @@ function demoLogin(role) {
   loginSuccess(DEMO_USERS[role]);
 }
 
+// ─── PERMISSIONS ───────────────────────
+// Directeur   = lecture seule partout
+// Comptable   = journal, bilan, conformite (écriture) + lecture reste
+// Trésorier   = membres, épargne, prêts, récoltes, ventes, AG (écriture)
+const PERMS = {
+  'Directeur': { canWrite: [] },
+  'Comptable':  { canWrite: ['journal','bilan','conformite','ventes'] },
+  'Trésorier':  { canWrite: ['membres','epargne','prets','recoltes','assemblees','ventes'] },
+};
+
+function canWrite(page) {
+  if (!currentUser) return false;
+  const role = currentUser.role;
+  const p = PERMS[role];
+  if (!p) return false;
+  return p.canWrite.includes(page);
+}
+
 function loginSuccess(user) {
   currentUser = user;
   document.getElementById('login-screen').style.display = 'none';
@@ -812,6 +832,23 @@ function loginSuccess(user) {
   document.getElementById('nav-username').textContent = user.nom;
   document.getElementById('nav-role').textContent     = user.role;
   document.getElementById('nav-avatar').textContent   = user.nom.charAt(0).toUpperCase();
+
+  // Badge rôle couleur
+  const roleColors = { Directeur: '#1A4A7A', Comptable: '#1E4D2B', Trésorier: '#C8882A' };
+  document.getElementById('nav-avatar').style.background = roleColors[user.role] || '#1E4D2B';
+
+  // Badge topbar
+  const tb = document.getElementById('topbar-role-badge');
+  if (tb) { tb.textContent = user.role; const rc2 = { Directeur:'#EBF3FF', Comptable:'#E8F5EC', Trésorier:'#FFF4E0'}; tb.style.background = rc2[user.role]||''; }
+  // Afficher badge rôle dans sidebar
+  const roleDesc = {
+    'Directeur': '👁 Lecture seule — tous modules',
+    'Comptable':  '✏️ Écriture : Journal · Bilan · Conformité',
+    'Trésorier':  '✏️ Écriture : Membres · Épargne · Prêts · Récoltes',
+  };
+  const rb = document.getElementById('role-badge');
+  if (rb) rb.innerHTML = `<span style="opacity:.6">${roleDesc[user.role]||''}</span>`;
+
   navigate('dashboard');
 }
 
@@ -842,9 +879,9 @@ function navigate(page) {
   };
   document.getElementById('page-title').textContent = titles[page] || page;
 
-  const actionPages = { membres: 'Nouveau Membre', prets: 'Nouvelle Demande', journal: 'Nouvelle Écriture', recoltes: 'Enregistrer Récolte', assemblees: 'Planifier AG' };
+  const actionPages = { membres: 'Nouveau Membre', prets: 'Nouvelle Demande', journal: 'Nouvelle Écriture', recoltes: 'Enregistrer Récolte', assemblees: 'Planifier AG', ventes: 'Nouvelle Vente' };
   const btn = document.getElementById('topbar-action');
-  if (actionPages[page]) {
+  if (actionPages[page] && canWrite(page)) {
     btn.style.display = 'inline-flex';
     btn.textContent = '+ ' + actionPages[page];
   } else {
@@ -857,15 +894,25 @@ function navigate(page) {
 }
 
 function topbarAction() {
+  if (!canWrite(currentPage)) { toast('Accès en lecture seule pour votre rôle', 'error'); return; }
   const actions = {
     membres: openNouveauMembre,
     prets: openNouvelleDemandePret,
     journal: openNouvelleEcriture,
     recoltes: openNouvelleRecolte,
     assemblees: openNouvelleAG,
+    ventes: openNouvelleVente,
   };
   const fn = actions[currentPage];
   if (fn) fn();
+}
+
+function checkWrite(page) {
+  if (!canWrite(page)) {
+    toast('⛔ ' + currentUser.role + ' : accès en lecture seule sur cette section', 'error');
+    return false;
+  }
+  return true;
 }
 
 // ─── PAGES ─────────────────────────────
@@ -1042,6 +1089,7 @@ function membres() {
 
 function renderMembresRows(list) {
   if (!list.length) return '<tr class="empty-row"><td colspan="8">Aucun membre trouvé</td></tr>';
+  const peutEditer = canWrite('membres');
   return list.map(m => `
     <tr>
       <td><code style="font-size:.75rem;background:var(--gris-1);padding:.1rem .4rem;border-radius:4px">${m.numero}</code></td>
@@ -1052,8 +1100,8 @@ function renderMembresRows(list) {
       <td class="xof" style="font-weight:600">${fmt(m.epargne)}</td>
       <td style="font-size:.8rem;color:var(--gris-3)">${m.date_adhesion}</td>
       <td>
-        <button class="btn btn-outline btn-sm" onclick="voirMembre(${m.id})">Voir</button>
-        <button class="btn btn-sm" style="background:var(--or-lt);color:#7A5010;border:none;cursor:pointer" onclick="editMembre(${m.id})">Éditer</button>
+        <button class="btn btn-outline btn-sm" onclick="voirMembre(${m.id})">👁 Voir</button>
+        ${peutEditer ? `<button class="btn btn-sm" style="background:var(--or-lt);color:#7A5010;border:none;cursor:pointer;margin-left:4px" onclick="editMembre(${m.id})">✏️ Éditer</button>` : ''}
       </td>
     </tr>
   `).join('');
@@ -1130,6 +1178,7 @@ function editMembre(id) {
 }
 
 function openNouveauMembre() {
+  if (!checkWrite('membres')) return;
   openModal('Nouveau Membre', `
     <div class="form-row">
       <div class="form-group-inline"><label>Nom complet</label><input id="n-nom" placeholder="Prénom Nom"></div>
@@ -1182,7 +1231,7 @@ function epargne() {
     <div class="card">
       <div class="card-header">
         <div class="card-title">Comptes Épargne</div>
-        <button class="btn btn-green btn-sm" onclick="openDepotRetrait()">+ Dépôt / Retrait</button>
+        ${canWrite('epargne') ? '<button class="btn btn-green btn-sm" onclick="openDepotRetrait()">+ Dépôt / Retrait</button>' : ''}
       </div>
       <div class="table-wrap">
         <table>
@@ -1196,7 +1245,7 @@ function epargne() {
                 <td style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:${m.epargne>0?'var(--vert)':'var(--rouge)'}">${fmt(m.epargne)}</td>
                 <td>${statut_badge(m.statut)}</td>
                 <td>
-                  <button class="btn btn-sm btn-green" onclick="openDepotRetraitMembre(${m.id})">Transact.</button>
+                  ${canWrite('epargne') ? `<button class="btn btn-sm btn-green" onclick="openDepotRetraitMembre(${m.id})">💳 Transact.</button>` : '<span style="font-size:.75rem;color:var(--gris-3)">Lecture</span>'}
                 </td>
               </tr>
             `).join('')}
@@ -1209,6 +1258,7 @@ function epargne() {
 
 function openDepotRetrait() { openDepotRetraitMembre(null); }
 function openDepotRetraitMembre(membreId) {
+  if (!checkWrite('epargne')) return;
   openModal('Dépôt / Retrait Épargne', `
     <div class="form-group-inline">
       <label>Membre</label>
@@ -1269,7 +1319,10 @@ function prets() {
     </div>
 
     <div class="card">
-      <div class="card-header"><div class="card-title">Tous les prêts</div></div>
+      <div class="card-header">
+        <div class="card-title">Tous les prêts</div>
+        ${canWrite('prets') ? '<button class="btn btn-green btn-sm" onclick="openNouvelleDemandePret()">+ Nouvelle demande</button>' : ''}
+      </div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -1293,12 +1346,12 @@ function prets() {
                 </td>
                 <td>${statut_badge(p.statut)}</td>
                 <td>
-                  ${p.statut==='en_attente' ? `
+                  ${canWrite('prets') ? (p.statut==='en_attente' ? `
                     <button class="btn btn-sm btn-green" onclick="approuverPret(${p.id})">✓ Approuver</button>
                     <button class="btn btn-sm btn-red" style="margin-top:2px" onclick="refuserPret(${p.id})">✕ Refuser</button>
                   ` : p.statut==='actif' ? `
-                    <button class="btn btn-sm btn-outline" onclick="rembourserPret(${p.id})">Rembourser</button>
-                  ` : '—'}
+                    <button class="btn btn-sm btn-outline" onclick="rembourserPret(${p.id})">💰 Rembourser</button>
+                  ` : '—') : '<span style="font-size:.75rem;color:var(--gris-3)">Lecture</span>'}
                 </td>
               </tr>`;
             }).join('')}
@@ -1326,6 +1379,7 @@ function rembourserPret(id) {
 }
 
 function openNouvelleDemandePret() {
+  if (!checkWrite('prets')) return;
   openModal('Nouvelle Demande de Prêt', `
     <div class="form-group-inline">
       <label>Membre demandeur</label>
@@ -1423,6 +1477,7 @@ function filtrerJournal() {
 }
 
 function openNouvelleEcriture() {
+  if (!checkWrite('journal')) return;
   openModal('Nouvelle Écriture Comptable', `
     <div class="alert alert-warning">⚠️ Attention : les écritures sont immutables une fois validées.</div>
     <div class="form-row">
@@ -1592,11 +1647,11 @@ function conformite() {
   const checks = [
     { status:'ok',   icon:'✅', title:'Registre du Commerce (RCCM)', desc:'À jour — Renouvellement valide jusqu\'en mars 2025', action:null },
     { status:'ok',   icon:'✅', title:'Assemblée Générale annuelle', desc:'AG planifiée le 28/06/2024 — Convocations envoyées J-8', action:null },
-    { status:'warn', icon:'⚠️', title:'Déclaration TVA — Juin 2024', desc:'Échéance le 15 juillet 2024 — À préparer', action:'Préparer déclaration' },
+    { status:'warn', icon:'⚠️', title:'Déclaration TVA — Juin 2024', desc:'Échéance le 15 juillet 2024 — À préparer', action:'Préparer déclaration', fn:'openDeclarationTVA' },
     { status:'ok',   icon:'✅', title:'Bilan OHADA transmis', desc:'Bilan 2023 déposé à temps — Commissaire signataire', action:null },
-    { status:'warn', icon:'⚠️', title:'Cotisations CNSS personnels', desc:'Délai de versement dépassé de 3 jours — Régulariser', action:'Régulariser' },
+    { status:'warn', icon:'⚠️', title:'Cotisations CNSS personnels', desc:'Délai de versement dépassé de 3 jours — Régulariser', action:'Régulariser CNSS', fn:'openCNSS' },
     { status:'ok',   icon:'✅', title:'Plan comptable SYSCOA', desc:'5 niveaux de comptes actifs — Aucune anomalie détectée', action:null },
-    { status:'err',  icon:'❌', title:'Audit interne trimestriel', desc:'Rapport Q1 2024 non finalisé — En retard de 2 semaines', action:'Lancer audit' },
+    { status:'err',  icon:'❌', title:'Audit interne trimestriel', desc:'Rapport Q1 2024 non finalisé — En retard de 2 semaines', action:'Lancer audit', fn:'openAudit' },
     { status:'ok',   icon:'✅', title:'Licences et agréments', desc:'Agrément coopérative DASP à jour — Valide 2026', action:null },
   ];
 
@@ -1644,7 +1699,7 @@ function conformite() {
               <h4>${c.title}</h4>
               <p>${c.desc}</p>
             </div>
-            ${c.action ? `<div class="conformite-action"><button class="btn btn-sm btn-outline" onclick="toast('${c.action} — fonctionnalité disponible avec Supabase connecté')">${c.action}</button></div>` : ''}
+            ${c.action ? `<div class="conformite-action"><button class="btn btn-sm ${c.status==='err'?'btn-red':c.status==='warn'?'btn-gold':'btn-outline'}" onclick="${c.fn}()">${c.action}</button></div>` : ''}
           </div>
         `).join('')}
       </div>
@@ -1691,6 +1746,7 @@ function recoltes() {
 }
 
 function openNouvelleRecolte() {
+  if (!checkWrite('recoltes')) return;
   openModal('Enregistrer Récolte', `
     <div class="form-row">
       <div class="form-group-inline">
@@ -1752,7 +1808,7 @@ function ventes() {
     <div class="card">
       <div class="card-header">
         <div class="card-title">🛒 Ventes — Juin 2024</div>
-        <button class="btn btn-green btn-sm" onclick="openNouvelleVente()">+ Nouvelle Vente</button>
+        ${canWrite('ventes') ? '<button class="btn btn-green btn-sm" onclick="openNouvelleVente()">+ Nouvelle Vente</button>' : ''}
       </div>
       <div class="table-wrap">
         <table>
@@ -1774,6 +1830,7 @@ function ventes() {
 }
 
 function openNouvelleVente() {
+  if (!checkWrite('ventes')) return;
   const lotsStock = DEMO_RECOLTES.filter(r=>r.statut==='stocké');
   openModal('Enregistrer Vente', `
     <div class="form-group-inline">
@@ -1835,7 +1892,8 @@ function assemblees() {
                   </td>
                   <td>${statut_badge(a.statut)}</td>
                   <td>
-                    <button class="btn btn-outline btn-sm" onclick="voirAG(${a.id})">Détails</button>
+                    <button class="btn btn-outline btn-sm" onclick="voirAG(${a.id})">👁 Détails</button>
+                  ${canWrite('assemblees') && a.statut==='planifiée' ? `<button class="btn btn-sm btn-gold" onclick="marquerAGTenue(${a.id})" style="margin-left:4px">✓ Marquer tenue</button>` : ''}
                   </td>
                 </tr>
               `).join('')}
@@ -1880,7 +1938,31 @@ function voirAG(id) {
   document.getElementById('modal-footer').innerHTML = `<button class="btn btn-green" onclick="closeModal()">Fermer</button>`;
 }
 
+function marquerAGTenue(id) {
+  if (!checkWrite('assemblees')) return;
+  const a = DEMO_ASSEMBLEES.find(x=>x.id===id);
+  openModal(`Clôturer AG — ${a.type} du ${a.date}`, `
+    <div class="form-row">
+      <div class="form-group-inline"><label>Présents</label><input type="number" id="ag-pres" placeholder="0" min="0" max="${a.total}"></div>
+      <div class="form-group-inline"><label>Total membres</label><input value="${a.total}" readonly style="background:var(--gris-1)"></div>
+    </div>
+    <div class="form-group-inline"><label>Résolutions adoptées</label><textarea id="ag-res" placeholder="Ex: Approbation des comptes 2023 à l'unanimité..."></textarea></div>
+    <div class="form-group-inline"><label>Observations</label><textarea id="ag-obs" placeholder="Notes PV..."></textarea></div>
+  `, () => {
+    const pres = parseInt(document.getElementById('ag-pres').value)||0;
+    const quorumOk = Math.round(pres/a.total*100) >= a.quorum;
+    if (!quorumOk) {
+      if (!confirm(\`Quorum non atteint (\${Math.round(pres/a.total*100)}% < \${a.quorum}%). Confirmer quand même ?\`)) return;
+    }
+    a.presents = pres;
+    a.statut = 'tenue';
+    closeModal(); assemblees();
+    toast(quorumOk ? \`AG clôturée — Quorum atteint (\${pres}/\${a.total}) ✓\` : \`AG clôturée — Quorum non atteint ⚠️\`, quorumOk ? 'success' : '');
+  }, 'Clôturer AG');
+}
+
 function openNouvelleAG() {
+  if (!checkWrite('assemblees')) return;
   openModal('Planifier Assemblée Générale', `
     <div class="form-row">
       <div class="form-group-inline">

@@ -1,423 +1,328 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion Coopérative - Connexion</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            padding: 40px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .logo {
-            font-size: 48px;
-            margin-bottom: 10px;
-        }
-
-        h1 {
-            color: #333;
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-
-        .subtitle {
-            color: #666;
-            font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            color: #333;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        input[type="email"],
-        input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-        input[type="email"]:focus,
-        input[type="password"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .quick-access {
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-
-        .quick-access p {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .user-btn {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-
-        .user-btn button {
-            flex: 1;
-            min-width: 100px;
-            padding: 8px 12px;
-            font-size: 12px;
-            border: 1px solid #ddd;
-            background: white;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .user-btn button:hover {
-            background: #f0f0f0;
-            border-color: #667eea;
-        }
-
-        .btn-login {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .btn-login:hover {
-            transform: translateY(-2px);
-        }
-
-        .btn-login:active {
-            transform: translateY(0);
-        }
-
-        .btn-login:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        .message {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 5px;
-            text-align: center;
-            display: none;
-        }
-
-        .message.error {
-            background: #fee;
-            color: #c33;
-            border: 1px solid #fcc;
-            display: block;
-        }
-
-        .message.success {
-            background: #efe;
-            color: #3c3;
-            border: 1px solid #cfc;
-            display: block;
-        }
-
-        .message.loading {
-            background: #eef;
-            color: #33c;
-            border: 1px solid #ccf;
-            display: block;
-        }
-
-        .loader {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 2px solid rgba(51, 51, 204, 0.3);
-            border-radius: 50%;
-            border-top-color: #33c;
-            animation: spin 0.6s linear infinite;
-            margin-right: 8px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .debug {
-            margin-top: 20px;
-            padding: 10px;
-            background: #f9f9f9;
-            border: 1px solid #eee;
-            border-radius: 5px;
-            font-size: 12px;
-            color: #666;
-            display: none;
-        }
-
-        .debug.show {
-            display: block;
-        }
-
-        .dashboard {
-            display: none;
-        }
-
-        .dashboard.show {
-            display: block;
-        }
-
-        .user-info {
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-
-        .btn-logout {
-            width: 100%;
-            padding: 10px;
-            background: #999;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .btn-logout:hover {
-            background: #666;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestion Coopérative</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:20px}
+.container{background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.15);width:100%;max-width:420px;padding:36px;margin-top:5vh}
+.container.wide{max-width:820px}
+.header{text-align:center;margin-bottom:24px}
+.logo{font-size:44px;margin-bottom:8px}
+h1{color:#333;font-size:24px;margin-bottom:4px}
+h2{color:#333;font-size:17px;margin:18px 0 10px}
+.subtitle{color:#666;font-size:14px}
+.tabs{display:flex;margin-bottom:22px;border-bottom:2px solid #eee}
+.tabs button{flex:1;padding:10px;background:none;border:none;font-size:15px;font-weight:600;color:#888;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+.tabs button.active{color:#667eea;border-bottom-color:#667eea}
+.form-group{margin-bottom:16px}
+label{display:block;color:#333;font-weight:600;margin-bottom:6px;font-size:14px}
+input[type=email],input[type=password],input[type=text]{width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:5px;font-size:14px}
+input:focus,select:focus{outline:none;border-color:#667eea}
+.btn{width:100%;padding:12px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;border-radius:5px;font-size:16px;font-weight:600;cursor:pointer}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.btn-small{padding:6px 12px;font-size:13px;width:auto;border-radius:4px}
+.btn-logout{width:auto;padding:8px 16px;background:#999;color:#fff;border:none;border-radius:5px;cursor:pointer;font-weight:600}
+.btn-logout:hover{background:#666}
+.message{margin-top:14px;padding:12px;border-radius:5px;text-align:center;font-size:14px;display:none}
+.message.error{background:#fee;color:#c33;border:1px solid #fcc;display:block}
+.message.success{background:#efe;color:#2a7a2a;border:1px solid #cfc;display:block}
+.message.loading{background:#eef;color:#33c;border:1px solid #ccf;display:block}
+.hidden{display:none!important}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.who{font-size:14px;color:#555}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700;background:#eef;color:#4a4ac8;margin-left:6px}
+.badge.en_attente{background:#fff3cd;color:#8a6d00}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:10px}
+.card{background:#f5f6ff;border:1px solid #e0e3ff;border-radius:8px;padding:16px}
+.card strong{display:block;color:#333;margin-bottom:4px}
+.card span{font-size:12px;color:#666}
+.notice{background:#fff3cd;color:#6b5400;padding:16px;border-radius:6px;font-size:14px;line-height:1.5}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #eee}
+th{color:#555;font-size:12px;text-transform:uppercase}
+select{padding:7px;border:2px solid #e0e0e0;border-radius:5px;font-size:13px}
+.tablewrap{overflow-x:auto}
+</style>
 </head>
 <body>
-    <!-- FORMULAIRE DE CONNEXION -->
-    <div class="login-form">
-        <div class="container">
-            <div class="header">
-                <div class="logo">🏢</div>
-                <h1>Gestion Coopérative</h1>
-                <p class="subtitle">Plateforme de Gestion</p>
-            </div>
 
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" required placeholder="directeur@coop.sn">
-                </div>
+<!-- ===== CONNEXION / INSCRIPTION ===== -->
+<div id="authView" class="container">
+  <div class="header">
+    <div class="logo">🏢</div>
+    <h1>Gestion Coopérative</h1>
+    <p class="subtitle">Plateforme de Gestion</p>
+  </div>
 
-                <div class="form-group">
-                    <label for="password">Mot de passe</label>
-                    <input type="password" id="password" required placeholder="Votre mot de passe">
-                </div>
+  <div class="tabs">
+    <button type="button" id="tabLogin" class="active">Connexion</button>
+    <button type="button" id="tabSignup">Inscription</button>
+  </div>
 
-                <!-- Accès rapide aux comptes de test -->
-                <div class="quick-access">
-                    <p>🔑 Accès rapide (remplissage automatique) :</p>
-                    <div class="user-btn">
-                        <button type="button" onclick="setUser('directeur@coop.sn', 'pape1988')">
-                            👔 Directeur
-                        </button>
-                        <button type="button" onclick="setUser('comptable@coop.sn', 'makala')">
-                            📊 Comptable
-                        </button>
-                        <button type="button" onclick="setUser('tresorier@coop.sn', 'DIELE')">
-                            💰 Trésorier
-                        </button>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-login" id="loginBtn">Se connecter</button>
-            </form>
-
-            <div id="message" class="message"></div>
-            <div id="debug" class="debug">
-                <strong>Debug Mode (F12):</strong><br>
-                Project: xeerwmplowlcwdfhhbwez.supabase.co<br>
-                URL: https://makaladiele-sys.github.io/GESTION-COOPERATIVE/
-            </div>
-        </div>
+  <form id="loginForm">
+    <div class="form-group">
+      <label for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" required autocomplete="email">
     </div>
-
-    <!-- DASHBOARD (après connexion) -->
-    <div class="dashboard" id="dashboard">
-        <div class="container">
-            <div class="header">
-                <div class="logo">✅</div>
-                <h1>Tableau de Bord</h1>
-            </div>
-
-            <div class="user-info">
-                <p><strong>Connecté en tant que :</strong></p>
-                <p id="userEmail" style="color: #667eea; font-weight: 600;"></p>
-            </div>
-
-            <div style="padding: 15px; background: #efe; border-radius: 5px; margin-bottom: 20px;">
-                <p style="color: #3c3; margin-bottom: 10px;">✅ Connexion réussie !</p>
-                <p style="color: #666; font-size: 12px;">Votre session est active. Vous pouvez maintenant accéder aux différentes sections de l'application.</p>
-            </div>
-
-            <button class="btn-logout" onclick="logout()">Se déconnecter</button>
-        </div>
+    <div class="form-group">
+      <label for="loginPassword">Mot de passe</label>
+      <input type="password" id="loginPassword" required autocomplete="current-password">
     </div>
+    <button type="submit" class="btn" id="loginBtn">Se connecter</button>
+  </form>
 
-    <script>
-        // ===== CONFIGURATION SUPABASE =====
-        const SUPABASE_URL = 'https://xeerwmpowlcwdfhhbwez.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhlZXJ3bXBvd2xjd2RmaGhid2V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMjkzNzUsImV4cCI6MjA5NzgwNTM3NX0.mJe6w6XY5NSacutxnLHtz3rQrbEFWORRe-45Nl2S92o';
+  <form id="signupForm" class="hidden">
+    <div class="form-group">
+      <label for="signupNom">Nom complet</label>
+      <input type="text" id="signupNom" required autocomplete="name">
+    </div>
+    <div class="form-group">
+      <label for="signupEmail">Email</label>
+      <input type="email" id="signupEmail" required autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label for="signupPassword">Mot de passe (6 caractères minimum)</label>
+      <input type="password" id="signupPassword" required minlength="6" autocomplete="new-password">
+    </div>
+    <div class="form-group">
+      <label for="signupPassword2">Confirmer le mot de passe</label>
+      <input type="password" id="signupPassword2" required minlength="6" autocomplete="new-password">
+    </div>
+    <button type="submit" class="btn" id="signupBtn">Créer mon compte</button>
+  </form>
 
-        // Initialiser Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <div id="message" class="message"></div>
+</div>
 
-        // ===== VARIABLES GLOBALES =====
-        const loginForm = document.getElementById('loginForm');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const loginBtn = document.getElementById('loginBtn');
-        const messageDiv = document.getElementById('message');
-        const loginFormDiv = document.querySelector('.login-form');
-        const dashboardDiv = document.getElementById('dashboard');
+<!-- ===== APPLICATION (après connexion) ===== -->
+<div id="appView" class="container wide hidden">
+  <div class="topbar">
+    <div class="who"><span id="userEmail"></span><span id="roleBadge" class="badge"></span></div>
+    <button class="btn-logout" id="logoutBtn" type="button">Se déconnecter</button>
+  </div>
 
-        // ===== FONCTION : Remplir les champs automatiquement =====
-        function setUser(email, password) {
-            emailInput.value = email;
-            passwordInput.value = password;
-            loginBtn.focus();
-        }
+  <!-- En attente d'un rôle -->
+  <div id="pendingView" class="hidden">
+    <div class="notice">
+      ⏳ Votre compte est créé, mais l'administrateur ne vous a pas encore attribué de rôle.
+      Revenez après validation.
+    </div>
+  </div>
 
-        // ===== FONCTION : Afficher un message =====
-        function showMessage(text, type) {
-            messageDiv.textContent = text;
-            messageDiv.className = `message ${type}`;
-        }
+  <!-- Sections selon le rôle -->
+  <div id="sectionsView" class="hidden">
+    <h2>Vos accès</h2>
+    <div class="cards" id="cards"></div>
+  </div>
 
-        // ===== FONCTION : Connexion =====
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+  <!-- Administration (admin uniquement) -->
+  <div id="adminView" class="hidden">
+    <h2>Gestion des utilisateurs</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th></th></tr></thead>
+        <tbody id="usersBody"></tbody>
+      </table>
+    </div>
+    <div id="adminMessage" class="message"></div>
+  </div>
+</div>
 
-            const email = emailInput.value;
-            const password = passwordInput.value;
+<script>
+// ===== CONFIGURATION SUPABASE =====
+const SUPABASE_URL = 'https://xeerwmpowlcwdfhhbwez.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhlZXJ3bXBvd2xjd2RmaGhid2V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMjkzNzUsImV4cCI6MjA5NzgwNTM3NX0.mJe6w6XY5NSacutxnLHtz3rQrbEFWORRe-45Nl2S92o';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            // Validation basique
-            if (!email || !password) {
-                showMessage('❌ Veuillez remplir tous les champs', 'error');
-                return;
-            }
+// ===== RÔLES =====
+const ROLES = {
+  admin:      'Administrateur',
+  dg:         'Directeur Général',
+  comptable:  'Comptable',
+  tresorier:  'Trésorier',
+  membre:     'Membre simple',
+  en_attente: 'En attente'
+};
 
-            // Désactiver le bouton pendant la connexion
-            loginBtn.disabled = true;
-            showMessage('⏳ Connexion en cours...', 'loading');
+// Sections visibles par rôle
+const SECTIONS = {
+  membres:    { titre: '👥 Gestion des membres',      desc: 'Liste et fiches des membres',   roles: ['admin','dg'] },
+  compta:     { titre: '📊 Comptabilité / Finances',  desc: 'Écritures et bilans',           roles: ['admin','dg','comptable'] },
+  cotisations:{ titre: '💰 Cotisations / Paiements',  desc: 'Encaissements et suivi',        roles: ['admin','dg','comptable','tresorier'] },
+  rapports:   { titre: '📈 Rapports / Statistiques',  desc: 'Tableaux de bord',              roles: ['admin','dg','comptable','tresorier'] },
+  moncompte:  { titre: '🙋 Mon espace',               desc: 'Mes cotisations et informations', roles: ['admin','dg','comptable','tresorier','membre'] }
+};
 
-            try {
-                console.log('Tentative de connexion avec:', email);
+// ===== ÉLÉMENTS =====
+const $ = (id) => document.getElementById(id);
+const authView = $('authView'), appView = $('appView');
+const messageDiv = $('message');
 
-                // Appel Supabase
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password,
-                });
+function showMessage(text, type) {
+  messageDiv.textContent = text;
+  messageDiv.className = 'message ' + type;
+}
+function clearMessage() { messageDiv.className = 'message'; messageDiv.textContent = ''; }
 
-                if (error) {
-                    console.error('Erreur Supabase:', error.message);
-                    
-                    if (error.message.includes('Invalid login credentials')) {
-                        showMessage('❌ Email ou mot de passe incorrect', 'error');
-                    } else if (error.message.includes('Email not confirmed')) {
-                        showMessage('❌ Veuillez confirmer votre email', 'error');
-                    } else {
-                        showMessage(`❌ Erreur: ${error.message}`, 'error');
-                    }
-                    loginBtn.disabled = false;
-                    return;
-                }
+// ===== ONGLETS =====
+function switchTab(tab) {
+  const login = tab === 'login';
+  $('loginForm').classList.toggle('hidden', !login);
+  $('signupForm').classList.toggle('hidden', login);
+  $('tabLogin').classList.toggle('active', login);
+  $('tabSignup').classList.toggle('active', !login);
+  clearMessage();
+}
+$('tabLogin').addEventListener('click', () => switchTab('login'));
+$('tabSignup').addEventListener('click', () => switchTab('signup'));
 
-                console.log('Connexion réussie:', data.user.email);
+// ===== CONNEXION =====
+$('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = $('loginBtn');
+  btn.disabled = true;
+  showMessage('⏳ Connexion en cours...', 'loading');
+  const { error } = await sb.auth.signInWithPassword({
+    email: $('loginEmail').value.trim(),
+    password: $('loginPassword').value
+  });
+  btn.disabled = false;
+  if (error) {
+    if (error.message.includes('Invalid login credentials')) showMessage('❌ Email ou mot de passe incorrect', 'error');
+    else if (error.message.includes('Email not confirmed')) showMessage('❌ Confirmez votre email avant de vous connecter', 'error');
+    else showMessage('❌ ' + error.message, 'error');
+    return;
+  }
+  clearMessage();
+  // la suite est gérée par onAuthStateChange
+});
 
-                // Afficher le dashboard
-                showDashboard(data.user.email);
-                showMessage('✅ Connexion réussie!', 'success');
+// ===== INSCRIPTION LIBRE =====
+$('signupForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const nom = $('signupNom').value.trim();
+  const email = $('signupEmail').value.trim();
+  const pw = $('signupPassword').value;
+  if (pw !== $('signupPassword2').value) { showMessage('❌ Les mots de passe ne correspondent pas', 'error'); return; }
+  if (pw.length < 6) { showMessage('❌ Mot de passe : 6 caractères minimum', 'error'); return; }
 
-            } catch (err) {
-                console.error('Erreur:', err);
-                showMessage(`❌ Erreur de connexion: ${err.message}`, 'error');
-                loginBtn.disabled = false;
-            }
-        });
+  const btn = $('signupBtn');
+  btn.disabled = true;
+  showMessage('⏳ Création du compte...', 'loading');
+  const { data, error } = await sb.auth.signUp({
+    email, password: pw,
+    options: { data: { nom } }
+  });
+  btn.disabled = false;
+  if (error) { showMessage('❌ ' + error.message, 'error'); return; }
 
-        // ===== FONCTION : Afficher le dashboard =====
-        function showDashboard(userEmail) {
-            loginFormDiv.style.display = 'none';
-            dashboardDiv.classList.add('show');
-            document.getElementById('userEmail').textContent = userEmail;
-        }
+  if (data.session) {
+    clearMessage(); // connecté directement (confirmation email désactivée)
+  } else {
+    $('signupForm').reset();
+    showMessage('✅ Compte créé. Vérifiez votre email pour confirmer, puis connectez-vous. L\'administrateur vous attribuera ensuite un rôle.', 'success');
+  }
+});
 
-        // ===== FONCTION : Déconnexion =====
-        async function logout() {
-            await supabase.auth.signOut();
-            loginFormDiv.style.display = 'block';
-            dashboardDiv.classList.remove('show');
-            loginForm.reset();
-            messageDiv.className = 'message';
-            messageDiv.textContent = '';
-            loginBtn.disabled = false;
-        }
+// ===== PROFIL =====
+async function loadProfile(user) {
+  const { data, error } = await sb.from('coop_profiles')
+    .select('id,email,nom,role').eq('id', user.id).maybeSingle();
+  if (error) { console.error(error.message); return null; }
+  return data;
+}
 
-        // ===== VÉRIFIER LA SESSION À LA SÉLECTION INITIALE =====
-        supabase.auth.onAuthStateChange((event, session) => {
-            console.log('Auth state changed:', event, session?.user?.email);
-            if (session) {
-                showDashboard(session.user.email);
-            }
-        });
+async function showApp(user) {
+  const profile = await loadProfile(user);
+  const role = profile ? profile.role : 'en_attente';
 
-        // ===== INITIALISATION =====
-        console.log('✅ Application démarrée');
-        console.log('🔗 Supabase URL:', SUPABASE_URL);
-        console.log('🌍 GitHub Pages URL: https://makaladiele-sys.github.io/GESTION-COOPERATIVE/');
-    </script>
+  $('userEmail').textContent = (profile && profile.nom ? profile.nom + ' — ' : '') + user.email;
+  const badge = $('roleBadge');
+  badge.textContent = ROLES[role] || role;
+  badge.className = 'badge ' + role;
+
+  $('pendingView').classList.toggle('hidden', role !== 'en_attente');
+  $('sectionsView').classList.toggle('hidden', role === 'en_attente');
+  $('adminView').classList.toggle('hidden', role !== 'admin');
+
+  // Cartes selon le rôle
+  const cards = $('cards');
+  cards.textContent = '';
+  Object.values(SECTIONS).filter(s => s.roles.includes(role)).forEach(s => {
+    const c = document.createElement('div'); c.className = 'card';
+    const t = document.createElement('strong'); t.textContent = s.titre;
+    const d = document.createElement('span'); d.textContent = s.desc;
+    c.append(t, d); cards.appendChild(c);
+  });
+
+  authView.classList.add('hidden');
+  appView.classList.remove('hidden');
+
+  if (role === 'admin') loadUsers(user.id);
+}
+
+// ===== ADMIN : liste des utilisateurs et attribution des rôles =====
+async function loadUsers(myId) {
+  const body = $('usersBody');
+  const { data, error } = await sb.from('coop_profiles')
+    .select('id,email,nom,role').order('created_at', { ascending: false });
+  body.textContent = '';
+  if (error) { showAdminMessage('❌ ' + error.message, 'error'); return; }
+
+  data.forEach(u => {
+    const tr = document.createElement('tr');
+    const tdNom = document.createElement('td'); tdNom.textContent = u.nom || '—';
+    const tdMail = document.createElement('td'); tdMail.textContent = u.email;
+    const tdRole = document.createElement('td');
+    const sel = document.createElement('select');
+    Object.entries(ROLES).forEach(([val, label]) => {
+      const o = document.createElement('option');
+      o.value = val; o.textContent = label;
+      if (val === u.role) o.selected = true;
+      sel.appendChild(o);
+    });
+    if (u.id === myId) sel.disabled = true; // l'admin ne modifie pas son propre rôle
+    tdRole.appendChild(sel);
+    const tdBtn = document.createElement('td');
+    if (u.id !== myId) {
+      const b = document.createElement('button');
+      b.className = 'btn btn-small'; b.textContent = 'Enregistrer';
+      b.addEventListener('click', async () => {
+        b.disabled = true;
+        const { error: err } = await sb.from('coop_profiles').update({ role: sel.value }).eq('id', u.id);
+        b.disabled = false;
+        if (err) showAdminMessage('❌ ' + err.message, 'error');
+        else showAdminMessage('✅ Rôle mis à jour : ' + (u.nom || u.email) + ' → ' + ROLES[sel.value], 'success');
+      });
+      tdBtn.appendChild(b);
+    }
+    tr.append(tdNom, tdMail, tdRole, tdBtn);
+    body.appendChild(tr);
+  });
+}
+function showAdminMessage(text, type) {
+  const m = $('adminMessage'); m.textContent = text; m.className = 'message ' + type;
+}
+
+// ===== DÉCONNEXION =====
+$('logoutBtn').addEventListener('click', async () => { await sb.auth.signOut(); });
+
+// ===== SESSION =====
+sb.auth.onAuthStateChange((event, session) => {
+  if (session && session.user) {
+    // setTimeout évite un blocage de supabase-js quand on appelle l'API dans ce callback
+    setTimeout(() => showApp(session.user), 0);
+  } else {
+    appView.classList.add('hidden');
+    authView.classList.remove('hidden');
+    $('loginForm').reset();
+    switchTab('login');
+  }
+});
+</script>
 </body>
 </html>

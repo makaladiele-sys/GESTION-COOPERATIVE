@@ -1,328 +1,2435 @@
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Gestion Coopérative</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4"></script>
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:20px}
-.container{background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.15);width:100%;max-width:420px;padding:36px;margin-top:5vh}
-.container.wide{max-width:820px}
-.header{text-align:center;margin-bottom:24px}
-.logo{font-size:44px;margin-bottom:8px}
-h1{color:#333;font-size:24px;margin-bottom:4px}
-h2{color:#333;font-size:17px;margin:18px 0 10px}
-.subtitle{color:#666;font-size:14px}
-.tabs{display:flex;margin-bottom:22px;border-bottom:2px solid #eee}
-.tabs button{flex:1;padding:10px;background:none;border:none;font-size:15px;font-weight:600;color:#888;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
-.tabs button.active{color:#667eea;border-bottom-color:#667eea}
-.form-group{margin-bottom:16px}
-label{display:block;color:#333;font-weight:600;margin-bottom:6px;font-size:14px}
-input[type=email],input[type=password],input[type=text]{width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:5px;font-size:14px}
-input:focus,select:focus{outline:none;border-color:#667eea}
-.btn{width:100%;padding:12px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;border-radius:5px;font-size:16px;font-weight:600;cursor:pointer}
-.btn:disabled{opacity:.6;cursor:not-allowed}
-.btn-small{padding:6px 12px;font-size:13px;width:auto;border-radius:4px}
-.btn-logout{width:auto;padding:8px 16px;background:#999;color:#fff;border:none;border-radius:5px;cursor:pointer;font-weight:600}
-.btn-logout:hover{background:#666}
-.message{margin-top:14px;padding:12px;border-radius:5px;text-align:center;font-size:14px;display:none}
-.message.error{background:#fee;color:#c33;border:1px solid #fcc;display:block}
-.message.success{background:#efe;color:#2a7a2a;border:1px solid #cfc;display:block}
-.message.loading{background:#eef;color:#33c;border:1px solid #ccf;display:block}
-.hidden{display:none!important}
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
-.who{font-size:14px;color:#555}
-.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700;background:#eef;color:#4a4ac8;margin-left:6px}
-.badge.en_attente{background:#fff3cd;color:#8a6d00}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:10px}
-.card{background:#f5f6ff;border:1px solid #e0e3ff;border-radius:8px;padding:16px}
-.card strong{display:block;color:#333;margin-bottom:4px}
-.card span{font-size:12px;color:#666}
-.notice{background:#fff3cd;color:#6b5400;padding:16px;border-radius:6px;font-size:14px;line-height:1.5}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #eee}
-th{color:#555;font-size:12px;text-transform:uppercase}
-select{padding:7px;border:2px solid #e0e0e0;border-radius:5px;font-size:13px}
-.tablewrap{overflow-x:auto}
+
+/* =========================================================
+   RESET
+========================================================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+
+/* =========================================================
+   BODY
+========================================================= */
+
+body{
+
+    font-family:
+        "Segoe UI",
+        Tahoma,
+        Geneva,
+        Verdana,
+        sans-serif;
+
+    background:
+        linear-gradient(
+            135deg,
+            #667eea 0%,
+            #764ba2 100%
+        );
+
+    min-height:100vh;
+
+    padding:20px;
+
+}
+
+
+/* =========================================================
+   CONTENEUR
+========================================================= */
+
+.container{
+
+    background:#fff;
+
+    width:100%;
+    max-width:430px;
+
+    margin:5vh auto 0;
+
+    padding:36px;
+
+    border-radius:14px;
+
+    box-shadow:
+        0 15px 45px rgba(0,0,0,.18);
+
+}
+
+.container.wide{
+
+    max-width:1100px;
+
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.header{
+
+    text-align:center;
+
+    margin-bottom:25px;
+
+}
+
+.logo{
+
+    font-size:45px;
+
+    margin-bottom:8px;
+
+}
+
+h1{
+
+    font-size:25px;
+
+    color:#222;
+
+    margin-bottom:5px;
+
+}
+
+h2{
+
+    font-size:19px;
+
+    color:#333;
+
+    margin:20px 0 12px;
+
+}
+
+.subtitle{
+
+    color:#777;
+
+    font-size:14px;
+
+}
+
+
+/* =========================================================
+   TABS
+========================================================= */
+
+.tabs{
+
+    display:flex;
+
+    border-bottom:2px solid #eee;
+
+    margin-bottom:22px;
+
+}
+
+.tabs button{
+
+    flex:1;
+
+    padding:12px;
+
+    border:0;
+
+    background:none;
+
+    color:#888;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    border-bottom:3px solid transparent;
+
+}
+
+.tabs button.active{
+
+    color:#667eea;
+
+    border-bottom-color:#667eea;
+
+}
+
+
+/* =========================================================
+   FORMULAIRE
+========================================================= */
+
+.form-group{
+
+    margin-bottom:16px;
+
+}
+
+label{
+
+    display:block;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    color:#333;
+
+    margin-bottom:6px;
+
+}
+
+input{
+
+    width:100%;
+
+    padding:12px;
+
+    border:2px solid #e2e2e2;
+
+    border-radius:7px;
+
+    font-size:14px;
+
+    transition:.2s;
+
+}
+
+input:focus{
+
+    outline:none;
+
+    border-color:#667eea;
+
+}
+
+
+/* =========================================================
+   BOUTONS
+========================================================= */
+
+.btn{
+
+    width:100%;
+
+    padding:12px;
+
+    border:none;
+
+    border-radius:7px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #667eea,
+            #764ba2
+        );
+
+    color:#fff;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+}
+
+.btn:hover{
+
+    opacity:.92;
+
+}
+
+.btn:disabled{
+
+    opacity:.5;
+
+    cursor:not-allowed;
+
+}
+
+.btn-small{
+
+    width:auto;
+
+    padding:7px 12px;
+
+    font-size:13px;
+
+}
+
+.btn-danger{
+
+    background:#dc3545;
+
+}
+
+.btn-secondary{
+
+    background:#777;
+
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+.message{
+
+    display:none;
+
+    margin-top:15px;
+
+    padding:12px;
+
+    border-radius:7px;
+
+    font-size:14px;
+
+    text-align:center;
+
+}
+
+.message.success{
+
+    display:block;
+
+    background:#eaf8ee;
+
+    color:#21753a;
+
+    border:1px solid #bce3c7;
+
+}
+
+.message.error{
+
+    display:block;
+
+    background:#fff0f0;
+
+    color:#b42323;
+
+    border:1px solid #f0bcbc;
+
+}
+
+.message.loading{
+
+    display:block;
+
+    background:#eef2ff;
+
+    color:#414fbd;
+
+    border:1px solid #c9d1ff;
+
+}
+
+
+/* =========================================================
+   HIDDEN
+========================================================= */
+
+.hidden{
+
+    display:none!important;
+
+}
+
+
+/* =========================================================
+   TOPBAR
+========================================================= */
+
+.topbar{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:15px;
+
+    padding-bottom:18px;
+
+    border-bottom:1px solid #eee;
+
+    flex-wrap:wrap;
+
+}
+
+.who{
+
+    color:#555;
+
+    font-size:14px;
+
+}
+
+.badge{
+
+    display:inline-block;
+
+    padding:5px 10px;
+
+    margin-left:7px;
+
+    border-radius:20px;
+
+    font-size:12px;
+
+    font-weight:700;
+
+}
+
+.badge.admin{
+
+    background:#eadfff;
+
+    color:#6638a8;
+
+}
+
+.badge.dg{
+
+    background:#dcecff;
+
+    color:#2162a2;
+
+}
+
+.badge.comptable{
+
+    background:#def7e7;
+
+    color:#22743d;
+
+}
+
+.badge.tresorier{
+
+    background:#fff0d2;
+
+    color:#956000;
+
+}
+
+.badge.membre{
+
+    background:#e9ecef;
+
+    color:#555;
+
+}
+
+.badge.en_attente{
+
+    background:#fff3cd;
+
+    color:#8a6d00;
+
+}
+
+
+/* =========================================================
+   NOTICE
+========================================================= */
+
+.notice{
+
+    background:#fff7d6;
+
+    border:1px solid #f0d98a;
+
+    color:#6d5600;
+
+    padding:20px;
+
+    border-radius:9px;
+
+    line-height:1.6;
+
+    margin-top:20px;
+
+}
+
+
+/* =========================================================
+   CARTES
+========================================================= */
+
+.cards{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(210px,1fr)
+        );
+
+    gap:14px;
+
+}
+
+.card{
+
+    background:#f8f9ff;
+
+    border:1px solid #e0e4ff;
+
+    border-radius:10px;
+
+    padding:20px;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+.card:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:
+        0 6px 18px rgba(0,0,0,.08);
+
+}
+
+.card strong{
+
+    display:block;
+
+    color:#333;
+
+    margin-bottom:7px;
+
+}
+
+.card span{
+
+    color:#777;
+
+    font-size:13px;
+
+}
+
+
+/* =========================================================
+   ADMIN
+========================================================= */
+
+.admin-panel{
+
+    margin-top:30px;
+
+    padding-top:25px;
+
+    border-top:1px solid #eee;
+
+}
+
+.admin-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:10px;
+
+    margin-bottom:15px;
+
+}
+
+.admin-header h2{
+
+    margin:0;
+
+}
+
+.tablewrap{
+
+    overflow-x:auto;
+
+}
+
+table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    min-width:800px;
+
+}
+
+th,
+td{
+
+    text-align:left;
+
+    padding:11px 9px;
+
+    border-bottom:1px solid #eee;
+
+}
+
+th{
+
+    font-size:12px;
+
+    text-transform:uppercase;
+
+    color:#666;
+
+    background:#fafafa;
+
+}
+
+td{
+
+    font-size:14px;
+
+}
+
+select{
+
+    padding:8px;
+
+    border:2px solid #ddd;
+
+    border-radius:6px;
+
+    min-width:180px;
+
+    background:#fff;
+
+}
+
+.status{
+
+    display:inline-block;
+
+    padding:5px 9px;
+
+    border-radius:20px;
+
+    font-size:11px;
+
+    font-weight:700;
+
+}
+
+.status.pending{
+
+    background:#fff3cd;
+
+    color:#8a6d00;
+
+}
+
+.status.active{
+
+    background:#e1f7e9;
+
+    color:#277743;
+
+}
+
+.empty{
+
+    text-align:center;
+
+    padding:25px;
+
+    color:#888;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:600px){
+
+    body{
+
+        padding:10px;
+
+    }
+
+    .container{
+
+        padding:22px;
+
+        margin-top:15px;
+
+    }
+
+    .topbar{
+
+        align-items:flex-start;
+
+    }
+
+    .btn-logout{
+
+        width:100%;
+
+    }
+
+}
+
 </style>
+
 </head>
+
+
 <body>
 
-<!-- ===== CONNEXION / INSCRIPTION ===== -->
-<div id="authView" class="container">
-  <div class="header">
-    <div class="logo">🏢</div>
-    <h1>Gestion Coopérative</h1>
-    <p class="subtitle">Plateforme de Gestion</p>
-  </div>
 
-  <div class="tabs">
-    <button type="button" id="tabLogin" class="active">Connexion</button>
-    <button type="button" id="tabSignup">Inscription</button>
-  </div>
+<!-- =========================================================
+     CONNEXION / INSCRIPTION
+========================================================= -->
 
-  <form id="loginForm">
-    <div class="form-group">
-      <label for="loginEmail">Email</label>
-      <input type="email" id="loginEmail" required autocomplete="email">
-    </div>
-    <div class="form-group">
-      <label for="loginPassword">Mot de passe</label>
-      <input type="password" id="loginPassword" required autocomplete="current-password">
-    </div>
-    <button type="submit" class="btn" id="loginBtn">Se connecter</button>
-  </form>
+<div
+    id="authView"
+    class="container">
 
-  <form id="signupForm" class="hidden">
-    <div class="form-group">
-      <label for="signupNom">Nom complet</label>
-      <input type="text" id="signupNom" required autocomplete="name">
-    </div>
-    <div class="form-group">
-      <label for="signupEmail">Email</label>
-      <input type="email" id="signupEmail" required autocomplete="email">
-    </div>
-    <div class="form-group">
-      <label for="signupPassword">Mot de passe (6 caractères minimum)</label>
-      <input type="password" id="signupPassword" required minlength="6" autocomplete="new-password">
-    </div>
-    <div class="form-group">
-      <label for="signupPassword2">Confirmer le mot de passe</label>
-      <input type="password" id="signupPassword2" required minlength="6" autocomplete="new-password">
-    </div>
-    <button type="submit" class="btn" id="signupBtn">Créer mon compte</button>
-  </form>
 
-  <div id="message" class="message"></div>
+    <div class="header">
+
+        <div class="logo">
+            🏢
+        </div>
+
+        <h1>
+            Gestion Coopérative
+        </h1>
+
+        <p class="subtitle">
+            Plateforme de gestion
+        </p>
+
+    </div>
+
+
+    <div class="tabs">
+
+        <button
+            id="tabLogin"
+            class="active"
+            type="button">
+
+            Connexion
+
+        </button>
+
+
+        <button
+            id="tabSignup"
+            type="button">
+
+            Inscription
+
+        </button>
+
+    </div>
+
+
+    <!-- =====================================================
+         CONNEXION
+    ====================================================== -->
+
+    <form id="loginForm">
+
+        <div class="form-group">
+
+            <label>
+                Email
+            </label>
+
+            <input
+                type="email"
+                id="loginEmail"
+                required
+                autocomplete="email">
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Mot de passe
+            </label>
+
+            <input
+                type="password"
+                id="loginPassword"
+                required
+                autocomplete="current-password">
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="btn"
+            id="loginBtn">
+
+            Se connecter
+
+        </button>
+
+    </form>
+
+
+    <!-- =====================================================
+         INSCRIPTION
+    ====================================================== -->
+
+    <form
+        id="signupForm"
+        class="hidden">
+
+
+        <div class="form-group">
+
+            <label>
+                Nom complet
+            </label>
+
+            <input
+                type="text"
+                id="signupNom"
+                required>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Email
+            </label>
+
+            <input
+                type="email"
+                id="signupEmail"
+                required>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Mot de passe
+            </label>
+
+            <input
+                type="password"
+                id="signupPassword"
+                minlength="6"
+                required>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Confirmer le mot de passe
+            </label>
+
+            <input
+                type="password"
+                id="signupPassword2"
+                minlength="6"
+                required>
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="btn"
+            id="signupBtn">
+
+            Créer mon compte
+
+        </button>
+
+    </form>
+
+
+    <div
+        id="message"
+        class="message">
+    </div>
+
 </div>
 
-<!-- ===== APPLICATION (après connexion) ===== -->
-<div id="appView" class="container wide hidden">
-  <div class="topbar">
-    <div class="who"><span id="userEmail"></span><span id="roleBadge" class="badge"></span></div>
-    <button class="btn-logout" id="logoutBtn" type="button">Se déconnecter</button>
-  </div>
 
-  <!-- En attente d'un rôle -->
-  <div id="pendingView" class="hidden">
-    <div class="notice">
-      ⏳ Votre compte est créé, mais l'administrateur ne vous a pas encore attribué de rôle.
-      Revenez après validation.
+<!-- =========================================================
+     APPLICATION
+========================================================= -->
+
+<div
+    id="appView"
+    class="container wide hidden">
+
+
+    <div class="topbar">
+
+        <div class="who">
+
+            <span id="userName">
+            </span>
+
+            <span id="userEmail">
+            </span>
+
+            <span
+                id="roleBadge"
+                class="badge">
+            </span>
+
+        </div>
+
+
+        <button
+            id="logoutBtn"
+            class="btn btn-small btn-secondary"
+            type="button">
+
+            Se déconnecter
+
+        </button>
+
     </div>
-  </div>
 
-  <!-- Sections selon le rôle -->
-  <div id="sectionsView" class="hidden">
-    <h2>Vos accès</h2>
-    <div class="cards" id="cards"></div>
-  </div>
 
-  <!-- Administration (admin uniquement) -->
-  <div id="adminView" class="hidden">
-    <h2>Gestion des utilisateurs</h2>
-    <div class="tablewrap">
-      <table>
-        <thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th></th></tr></thead>
-        <tbody id="usersBody"></tbody>
-      </table>
+    <!-- =====================================================
+         EN ATTENTE
+    ====================================================== -->
+
+    <div
+        id="pendingView"
+        class="hidden">
+
+        <div class="notice">
+
+            <strong>
+                ⏳ Votre compte est en attente
+            </strong>
+
+            <br><br>
+
+            Votre inscription a été enregistrée.
+
+            <br>
+
+            L'administrateur doit maintenant
+            vous attribuer un rôle.
+
+            <br><br>
+
+            Les rôles disponibles sont :
+
+            <strong>
+                Directeur Général,
+                Comptable,
+                Trésorier
+                ou Membre simple.
+            </strong>
+
+        </div>
+
     </div>
-    <div id="adminMessage" class="message"></div>
-  </div>
+
+
+    <!-- =====================================================
+         ESPACE UTILISATEUR
+    ====================================================== -->
+
+    <div
+        id="sectionsView"
+        class="hidden">
+
+        <h2>
+            Vos accès
+        </h2>
+
+        <div
+            id="cards"
+            class="cards">
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         ADMINISTRATION
+    ====================================================== -->
+
+    <div
+        id="adminView"
+        class="admin-panel hidden">
+
+
+        <div class="admin-header">
+
+            <h2>
+                Gestion des utilisateurs
+            </h2>
+
+
+            <button
+                id="refreshBtn"
+                class="btn btn-small"
+                type="button">
+
+                Actualiser
+
+            </button>
+
+        </div>
+
+
+        <p
+            style="
+                color:#777;
+                font-size:13px;
+                margin-bottom:15px;
+            ">
+
+            Les inscriptions sont libres.
+            Les nouveaux comptes sont automatiquement
+            placés en attente.
+            Seul l'administrateur attribue les rôles.
+
+        </p>
+
+
+        <div class="tablewrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Nom
+                        </th>
+
+                        <th>
+                            Email
+                        </th>
+
+                        <th>
+                            Rôle
+                        </th>
+
+                        <th>
+                            Statut
+                        </th>
+
+                        <th>
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody
+                    id="usersBody">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <div
+            id="adminMessage"
+            class="message">
+
+        </div>
+
+    </div>
+
 </div>
+
 
 <script>
-// ===== CONFIGURATION SUPABASE =====
-const SUPABASE_URL = 'https://xeerwmpowlcwdfhhbwez.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhlZXJ3bXBvd2xjd2RmaGhid2V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMjkzNzUsImV4cCI6MjA5NzgwNTM3NX0.mJe6w6XY5NSacutxnLHtz3rQrbEFWORRe-45Nl2S92o';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ===== RÔLES =====
+/* ============================================================
+   CONFIGURATION LOCALE
+============================================================ */
+
+
+/*
+    IMPORTANT
+
+    Ici il n'y a PLUS de Supabase.
+
+    Toutes les données sont enregistrées
+    dans le localStorage du navigateur.
+*/
+
+
+const STORAGE_KEY =
+    "gestion_cooperative_users_v1";
+
+
+const SESSION_KEY =
+    "gestion_cooperative_session_v1";
+
+
+/*
+    ADMINISTRATEUR PRINCIPAL
+
+    MODIFIE CES INFORMATIONS.
+
+    Ce compte sera automatiquement créé
+    s'il n'existe pas.
+*/
+
+const ADMIN_PRINCIPAL = {
+
+    nom:
+        "Administrateur Principal",
+
+    email:
+        "admin@cooperative.local",
+
+    password:
+        "Admin12345",
+
+    role:
+        "admin"
+
+};
+
+
+/* ============================================================
+   ROLES
+============================================================ */
+
 const ROLES = {
-  admin:      'Administrateur',
-  dg:         'Directeur Général',
-  comptable:  'Comptable',
-  tresorier:  'Trésorier',
-  membre:     'Membre simple',
-  en_attente: 'En attente'
+
+    admin:
+        "Administrateur",
+
+    dg:
+        "Directeur Général",
+
+    comptable:
+        "Comptable",
+
+    tresorier:
+        "Trésorier",
+
+    membre:
+        "Membre simple",
+
+    en_attente:
+        "En attente"
+
 };
 
-// Sections visibles par rôle
+
+/* ============================================================
+   ACCES
+============================================================ */
+
 const SECTIONS = {
-  membres:    { titre: '👥 Gestion des membres',      desc: 'Liste et fiches des membres',   roles: ['admin','dg'] },
-  compta:     { titre: '📊 Comptabilité / Finances',  desc: 'Écritures et bilans',           roles: ['admin','dg','comptable'] },
-  cotisations:{ titre: '💰 Cotisations / Paiements',  desc: 'Encaissements et suivi',        roles: ['admin','dg','comptable','tresorier'] },
-  rapports:   { titre: '📈 Rapports / Statistiques',  desc: 'Tableaux de bord',              roles: ['admin','dg','comptable','tresorier'] },
-  moncompte:  { titre: '🙋 Mon espace',               desc: 'Mes cotisations et informations', roles: ['admin','dg','comptable','tresorier','membre'] }
+
+    membres:{
+
+        titre:
+            "👥 Gestion des membres",
+
+        desc:
+            "Liste et gestion des membres",
+
+        roles:[
+            "admin",
+            "dg"
+        ]
+
+    },
+
+
+    compta:{
+
+        titre:
+            "📊 Comptabilité / Finances",
+
+        desc:
+            "Écritures, dépenses et bilans",
+
+        roles:[
+            "admin",
+            "dg",
+            "comptable"
+        ]
+
+    },
+
+
+    cotisations:{
+
+        titre:
+            "💰 Cotisations / Paiements",
+
+        desc:
+            "Encaissements et suivi",
+
+        roles:[
+            "admin",
+            "dg",
+            "comptable",
+            "tresorier"
+        ]
+
+    },
+
+
+    rapports:{
+
+        titre:
+            "📈 Rapports / Statistiques",
+
+        desc:
+            "Tableaux de bord et rapports",
+
+        roles:[
+            "admin",
+            "dg",
+            "comptable",
+            "tresorier"
+        ]
+
+    },
+
+
+    moncompte:{
+
+        titre:
+            "🙋 Mon espace",
+
+        desc:
+            "Mes informations et cotisations",
+
+        roles:[
+            "admin",
+            "dg",
+            "comptable",
+            "tresorier",
+            "membre"
+        ]
+
+    }
+
 };
 
-// ===== ÉLÉMENTS =====
-const $ = (id) => document.getElementById(id);
-const authView = $('authView'), appView = $('appView');
-const messageDiv = $('message');
 
-function showMessage(text, type) {
-  messageDiv.textContent = text;
-  messageDiv.className = 'message ' + type;
-}
-function clearMessage() { messageDiv.className = 'message'; messageDiv.textContent = ''; }
+/* ============================================================
+   UTILITAIRES
+============================================================ */
 
-// ===== ONGLETS =====
-function switchTab(tab) {
-  const login = tab === 'login';
-  $('loginForm').classList.toggle('hidden', !login);
-  $('signupForm').classList.toggle('hidden', login);
-  $('tabLogin').classList.toggle('active', login);
-  $('tabSignup').classList.toggle('active', !login);
-  clearMessage();
-}
-$('tabLogin').addEventListener('click', () => switchTab('login'));
-$('tabSignup').addEventListener('click', () => switchTab('signup'));
+const $ = id =>
+    document.getElementById(id);
 
-// ===== CONNEXION =====
-$('loginForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = $('loginBtn');
-  btn.disabled = true;
-  showMessage('⏳ Connexion en cours...', 'loading');
-  const { error } = await sb.auth.signInWithPassword({
-    email: $('loginEmail').value.trim(),
-    password: $('loginPassword').value
-  });
-  btn.disabled = false;
-  if (error) {
-    if (error.message.includes('Invalid login credentials')) showMessage('❌ Email ou mot de passe incorrect', 'error');
-    else if (error.message.includes('Email not confirmed')) showMessage('❌ Confirmez votre email avant de vous connecter', 'error');
-    else showMessage('❌ ' + error.message, 'error');
-    return;
-  }
-  clearMessage();
-  // la suite est gérée par onAuthStateChange
-});
 
-// ===== INSCRIPTION LIBRE =====
-$('signupForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const nom = $('signupNom').value.trim();
-  const email = $('signupEmail').value.trim();
-  const pw = $('signupPassword').value;
-  if (pw !== $('signupPassword2').value) { showMessage('❌ Les mots de passe ne correspondent pas', 'error'); return; }
-  if (pw.length < 6) { showMessage('❌ Mot de passe : 6 caractères minimum', 'error'); return; }
+function getUsers(){
 
-  const btn = $('signupBtn');
-  btn.disabled = true;
-  showMessage('⏳ Création du compte...', 'loading');
-  const { data, error } = await sb.auth.signUp({
-    email, password: pw,
-    options: { data: { nom } }
-  });
-  btn.disabled = false;
-  if (error) { showMessage('❌ ' + error.message, 'error'); return; }
+    const data =
+        localStorage.getItem(
+            STORAGE_KEY
+        );
 
-  if (data.session) {
-    clearMessage(); // connecté directement (confirmation email désactivée)
-  } else {
-    $('signupForm').reset();
-    showMessage('✅ Compte créé. Vérifiez votre email pour confirmer, puis connectez-vous. L\'administrateur vous attribuera ensuite un rôle.', 'success');
-  }
-});
+    if(!data){
 
-// ===== PROFIL =====
-async function loadProfile(user) {
-  const { data, error } = await sb.from('coop_profiles')
-    .select('id,email,nom,role').eq('id', user.id).maybeSingle();
-  if (error) { console.error(error.message); return null; }
-  return data;
-}
+        return [];
 
-async function showApp(user) {
-  const profile = await loadProfile(user);
-  const role = profile ? profile.role : 'en_attente';
-
-  $('userEmail').textContent = (profile && profile.nom ? profile.nom + ' — ' : '') + user.email;
-  const badge = $('roleBadge');
-  badge.textContent = ROLES[role] || role;
-  badge.className = 'badge ' + role;
-
-  $('pendingView').classList.toggle('hidden', role !== 'en_attente');
-  $('sectionsView').classList.toggle('hidden', role === 'en_attente');
-  $('adminView').classList.toggle('hidden', role !== 'admin');
-
-  // Cartes selon le rôle
-  const cards = $('cards');
-  cards.textContent = '';
-  Object.values(SECTIONS).filter(s => s.roles.includes(role)).forEach(s => {
-    const c = document.createElement('div'); c.className = 'card';
-    const t = document.createElement('strong'); t.textContent = s.titre;
-    const d = document.createElement('span'); d.textContent = s.desc;
-    c.append(t, d); cards.appendChild(c);
-  });
-
-  authView.classList.add('hidden');
-  appView.classList.remove('hidden');
-
-  if (role === 'admin') loadUsers(user.id);
-}
-
-// ===== ADMIN : liste des utilisateurs et attribution des rôles =====
-async function loadUsers(myId) {
-  const body = $('usersBody');
-  const { data, error } = await sb.from('coop_profiles')
-    .select('id,email,nom,role').order('created_at', { ascending: false });
-  body.textContent = '';
-  if (error) { showAdminMessage('❌ ' + error.message, 'error'); return; }
-
-  data.forEach(u => {
-    const tr = document.createElement('tr');
-    const tdNom = document.createElement('td'); tdNom.textContent = u.nom || '—';
-    const tdMail = document.createElement('td'); tdMail.textContent = u.email;
-    const tdRole = document.createElement('td');
-    const sel = document.createElement('select');
-    Object.entries(ROLES).forEach(([val, label]) => {
-      const o = document.createElement('option');
-      o.value = val; o.textContent = label;
-      if (val === u.role) o.selected = true;
-      sel.appendChild(o);
-    });
-    if (u.id === myId) sel.disabled = true; // l'admin ne modifie pas son propre rôle
-    tdRole.appendChild(sel);
-    const tdBtn = document.createElement('td');
-    if (u.id !== myId) {
-      const b = document.createElement('button');
-      b.className = 'btn btn-small'; b.textContent = 'Enregistrer';
-      b.addEventListener('click', async () => {
-        b.disabled = true;
-        const { error: err } = await sb.from('coop_profiles').update({ role: sel.value }).eq('id', u.id);
-        b.disabled = false;
-        if (err) showAdminMessage('❌ ' + err.message, 'error');
-        else showAdminMessage('✅ Rôle mis à jour : ' + (u.nom || u.email) + ' → ' + ROLES[sel.value], 'success');
-      });
-      tdBtn.appendChild(b);
     }
-    tr.append(tdNom, tdMail, tdRole, tdBtn);
-    body.appendChild(tr);
-  });
-}
-function showAdminMessage(text, type) {
-  const m = $('adminMessage'); m.textContent = text; m.className = 'message ' + type;
+
+    try{
+
+        return JSON.parse(data);
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        return [];
+
+    }
+
 }
 
-// ===== DÉCONNEXION =====
-$('logoutBtn').addEventListener('click', async () => { await sb.auth.signOut(); });
 
-// ===== SESSION =====
-sb.auth.onAuthStateChange((event, session) => {
-  if (session && session.user) {
-    // setTimeout évite un blocage de supabase-js quand on appelle l'API dans ce callback
-    setTimeout(() => showApp(session.user), 0);
-  } else {
-    appView.classList.add('hidden');
-    authView.classList.remove('hidden');
-    $('loginForm').reset();
-    switchTab('login');
-  }
-});
+function saveUsers(users){
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(users)
+    );
+
+}
+
+
+function getSession(){
+
+    const data =
+        localStorage.getItem(
+            SESSION_KEY
+        );
+
+    if(!data){
+
+        return null;
+
+    }
+
+    try{
+
+        return JSON.parse(data);
+
+    }
+
+    catch(error){
+
+        return null;
+
+    }
+
+}
+
+
+function saveSession(user){
+
+    localStorage.setItem(
+        SESSION_KEY,
+        JSON.stringify({
+            id:user.id
+        })
+    );
+
+}
+
+
+function clearSession(){
+
+    localStorage.removeItem(
+        SESSION_KEY
+    );
+
+}
+
+
+/* ============================================================
+   CREATION DE L'ADMIN
+============================================================ */
+
+function initAdmin(){
+
+    let users =
+        getUsers();
+
+
+    const exists =
+        users.some(
+            user =>
+                user.email.toLowerCase()
+                ===
+                ADMIN_PRINCIPAL.email.toLowerCase()
+        );
+
+
+    if(!exists){
+
+        const admin = {
+
+            id:
+                generateId(),
+
+            nom:
+                ADMIN_PRINCIPAL.nom,
+
+            email:
+                ADMIN_PRINCIPAL.email,
+
+            password:
+                ADMIN_PRINCIPAL.password,
+
+            role:
+                "admin",
+
+            createdAt:
+                new Date().toISOString()
+
+        };
+
+
+        users.push(admin);
+
+        saveUsers(users);
+
+    }
+
+}
+
+
+/* ============================================================
+   GENERATEUR ID
+============================================================ */
+
+function generateId(){
+
+    return (
+
+        Date.now().toString(36)
+        +
+        Math.random()
+            .toString(36)
+            .substring(2,9)
+
+    );
+
+}
+
+
+/* ============================================================
+   MESSAGE
+============================================================ */
+
+function showMessage(
+    text,
+    type
+){
+
+    const box =
+        $("message");
+
+    box.textContent =
+        text;
+
+    box.className =
+        "message " + type;
+
+}
+
+
+function clearMessage(){
+
+    const box =
+        $("message");
+
+    box.textContent =
+        "";
+
+    box.className =
+        "message";
+
+}
+
+
+function showAdminMessage(
+    text,
+    type
+){
+
+    const box =
+        $("adminMessage");
+
+    box.textContent =
+        text;
+
+    box.className =
+        "message " + type;
+
+}
+
+
+/* ============================================================
+   ONGLETS
+============================================================ */
+
+function switchTab(tab){
+
+    const login =
+        tab === "login";
+
+
+    $("loginForm")
+        .classList
+        .toggle(
+            "hidden",
+            !login
+        );
+
+
+    $("signupForm")
+        .classList
+        .toggle(
+            "hidden",
+            login
+        );
+
+
+    $("tabLogin")
+        .classList
+        .toggle(
+            "active",
+            login
+        );
+
+
+    $("tabSignup")
+        .classList
+        .toggle(
+            "active",
+            !login
+        );
+
+
+    clearMessage();
+
+}
+
+
+$("tabLogin")
+    .addEventListener(
+        "click",
+        () =>
+            switchTab("login")
+    );
+
+
+$("tabSignup")
+    .addEventListener(
+        "click",
+        () =>
+            switchTab("signup")
+    );
+
+
+/* ============================================================
+   INSCRIPTION
+============================================================ */
+
+$("signupForm")
+    .addEventListener(
+        "submit",
+        function(event){
+
+            event.preventDefault();
+
+
+            const nom =
+                $("signupNom")
+                    .value
+                    .trim();
+
+
+            const email =
+                $("signupEmail")
+                    .value
+                    .trim()
+                    .toLowerCase();
+
+
+            const password =
+                $("signupPassword")
+                    .value;
+
+
+            const password2 =
+                $("signupPassword2")
+                    .value;
+
+
+            if(password !== password2){
+
+                showMessage(
+                    "❌ Les mots de passe ne correspondent pas.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+
+            if(password.length < 6){
+
+                showMessage(
+                    "❌ Le mot de passe doit contenir au moins 6 caractères.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+
+            let users =
+                getUsers();
+
+
+            const exists =
+                users.some(
+                    user =>
+                        user.email.toLowerCase()
+                        ===
+                        email
+                );
+
+
+            if(exists){
+
+                showMessage(
+                    "❌ Cette adresse email est déjà utilisée.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+
+            /*
+                IMPORTANT :
+
+                Toute nouvelle inscription
+                reçoit automatiquement
+                le rôle EN ATTENTE.
+            */
+
+            const newUser = {
+
+                id:
+                    generateId(),
+
+                nom:
+                    nom,
+
+                email:
+                    email,
+
+                password:
+                    password,
+
+                role:
+                    "en_attente",
+
+                createdAt:
+                    new Date().toISOString()
+
+            };
+
+
+            users.push(
+                newUser
+            );
+
+
+            saveUsers(
+                users
+            );
+
+
+            $("signupForm")
+                .reset();
+
+
+            showMessage(
+                "✅ Compte créé. Votre compte est maintenant en attente de validation par l'administrateur.",
+                "success"
+            );
+
+        }
+    );
+
+
+/* ============================================================
+   CONNEXION
+============================================================ */
+
+$("loginForm")
+    .addEventListener(
+        "submit",
+        function(event){
+
+            event.preventDefault();
+
+
+            const email =
+                $("loginEmail")
+                    .value
+                    .trim()
+                    .toLowerCase();
+
+
+            const password =
+                $("loginPassword")
+                    .value;
+
+
+            const users =
+                getUsers();
+
+
+            const user =
+                users.find(
+                    u =>
+                        u.email.toLowerCase()
+                        ===
+                        email
+                        &&
+                        u.password
+                        ===
+                        password
+                );
+
+
+            if(!user){
+
+                showMessage(
+                    "❌ Email ou mot de passe incorrect.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+
+            saveSession(
+                user
+            );
+
+
+            $("loginForm")
+                .reset();
+
+
+            clearMessage();
+
+
+            showApp(
+                user
+            );
+
+        }
+    );
+
+
+/* ============================================================
+   AFFICHER APPLICATION
+============================================================ */
+
+function showApp(user){
+
+    $("authView")
+        .classList
+        .add("hidden");
+
+
+    $("appView")
+        .classList
+        .remove("hidden");
+
+
+    $("userName")
+        .textContent =
+            user.nom + " — ";
+
+
+    $("userEmail")
+        .textContent =
+            user.email;
+
+
+    const badge =
+        $("roleBadge");
+
+
+    badge.textContent =
+        ROLES[user.role];
+
+
+    badge.className =
+        "badge " + user.role;
+
+
+    /*
+        COMPTE EN ATTENTE
+    */
+
+    $("pendingView")
+        .classList
+        .toggle(
+            "hidden",
+            user.role !== "en_attente"
+        );
+
+
+    /*
+        SECTIONS
+    */
+
+    $("sectionsView")
+        .classList
+        .toggle(
+            "hidden",
+            user.role === "en_attente"
+        );
+
+
+    /*
+        ADMIN
+    */
+
+    $("adminView")
+        .classList
+        .toggle(
+            "hidden",
+            user.role !== "admin"
+        );
+
+
+    renderSections(
+        user
+    );
+
+
+    if(user.role === "admin"){
+
+        loadUsersAdmin();
+
+    }
+
+}
+
+
+/* ============================================================
+   AFFICHER LES SECTIONS
+============================================================ */
+
+function renderSections(user){
+
+    const cards =
+        $("cards");
+
+
+    cards.innerHTML =
+        "";
+
+
+    if(
+        user.role === "en_attente"
+    ){
+
+        return;
+
+    }
+
+
+    Object
+        .values(SECTIONS)
+
+        .filter(
+            section =>
+                section.roles
+                    .includes(
+                        user.role
+                    )
+        )
+
+        .forEach(
+            section => {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.className =
+                    "card";
+
+
+                card.innerHTML = `
+
+                    <strong>
+                        ${section.titre}
+                    </strong>
+
+                    <span>
+                        ${section.desc}
+                    </span>
+
+                `;
+
+
+                cards.appendChild(
+                    card
+                );
+
+            }
+        );
+
+}
+
+
+/* ============================================================
+   ADMIN : LISTE UTILISATEURS
+============================================================ */
+
+function loadUsersAdmin(){
+
+    const users =
+        getUsers();
+
+
+    const body =
+        $("usersBody");
+
+
+    body.innerHTML =
+        "";
+
+
+    if(users.length === 0){
+
+        body.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="5"
+                    class="empty">
+
+                    Aucun utilisateur.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    users.forEach(
+        user => {
+
+            const tr =
+                document.createElement(
+                    "tr"
+                );
+
+
+            /* NOM */
+
+            const tdNom =
+                document.createElement(
+                    "td"
+                );
+
+            tdNom.textContent =
+                user.nom;
+
+
+            /* EMAIL */
+
+            const tdEmail =
+                document.createElement(
+                    "td"
+                );
+
+            tdEmail.textContent =
+                user.email;
+
+
+            /* ROLE */
+
+            const tdRole =
+                document.createElement(
+                    "td"
+                );
+
+
+            const select =
+                document.createElement(
+                    "select"
+                );
+
+
+            /*
+                L'ADMIN PRINCIPAL
+                NE PEUT PAS ÊTRE MODIFIÉ
+            */
+
+            if(user.email.toLowerCase()
+                ===
+                ADMIN_PRINCIPAL.email.toLowerCase()){
+
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+
+                option.value =
+                    "admin";
+
+
+                option.textContent =
+                    "Administrateur";
+
+
+                option.selected =
+                    true;
+
+
+                select.appendChild(
+                    option
+                );
+
+
+                select.disabled =
+                    true;
+
+            }
+
+            else{
+
+
+                const roleOptions = {
+
+                    en_attente:
+                        "En attente",
+
+                    dg:
+                        "Directeur Général",
+
+                    comptable:
+                        "Comptable",
+
+                    tresorier:
+                        "Trésorier",
+
+                    membre:
+                        "Membre simple"
+
+                };
+
+
+                Object
+                    .entries(
+                        roleOptions
+                    )
+                    .forEach(
+                        ([value,label]) => {
+
+                            const option =
+                                document.createElement(
+                                    "option"
+                                );
+
+
+                            option.value =
+                                value;
+
+
+                            option.textContent =
+                                label;
+
+
+                            option.selected =
+                                user.role
+                                ===
+                                value;
+
+
+                            select.appendChild(
+                                option
+                            );
+
+                        }
+                    );
+
+            }
+
+
+            tdRole.appendChild(
+                select
+            );
+
+
+            /* STATUT */
+
+            const tdStatus =
+                document.createElement(
+                    "td"
+                );
+
+
+            const status =
+                document.createElement(
+                    "span"
+                );
+
+
+            if(
+                user.role
+                ===
+                "en_attente"
+            ){
+
+                status.className =
+                    "status pending";
+
+                status.textContent =
+                    "En attente";
+
+            }
+
+            else{
+
+                status.className =
+                    "status active";
+
+                status.textContent =
+                    "Accès actif";
+
+            }
+
+
+            tdStatus.appendChild(
+                status
+            );
+
+
+            /* ACTION */
+
+            const tdAction =
+                document.createElement(
+                    "td"
+                );
+
+
+            if(
+                user.email.toLowerCase()
+                ===
+                ADMIN_PRINCIPAL.email.toLowerCase()
+            ){
+
+                tdAction.textContent =
+                    "Compte principal";
+
+                tdAction.style.color =
+                    "#777";
+
+
+            }
+
+            else{
+
+                const button =
+                    document.createElement(
+                        "button"
+                    );
+
+
+                button.type =
+                    "button";
+
+
+                button.className =
+                    "btn btn-small";
+
+
+                button.textContent =
+                    "Enregistrer";
+
+
+                button.addEventListener(
+                    "click",
+                    function(){
+
+                        updateUserRole(
+                            user.id,
+                            select.value
+                        );
+
+                    }
+                );
+
+
+                tdAction.appendChild(
+                    button
+                );
+
+            }
+
+
+            tr.append(
+                tdNom,
+                tdEmail,
+                tdRole,
+                tdStatus,
+                tdAction
+            );
+
+
+            body.appendChild(
+                tr
+            );
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   MODIFIER LE ROLE
+============================================================ */
+
+function updateUserRole(
+    userId,
+    newRole
+){
+
+    let users =
+        getUsers();
+
+
+    const index =
+        users.findIndex(
+            user =>
+                user.id
+                ===
+                userId
+        );
+
+
+    if(index === -1){
+
+        showAdminMessage(
+            "❌ Utilisateur introuvable.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    /*
+        PROTECTION :
+
+        On interdit de transformer
+        quelqu'un en admin depuis
+        l'interface.
+    */
+
+    if(newRole === "admin"){
+
+        showAdminMessage(
+            "❌ Le rôle Administrateur ne peut pas être attribué depuis cette liste.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    users[index].role =
+        newRole;
+
+
+    saveUsers(
+        users
+    );
+
+
+    showAdminMessage(
+        "✅ Rôle de "
+        +
+        users[index].nom
+        +
+        " mis à jour : "
+        +
+        ROLES[newRole],
+        "success"
+    );
+
+
+    loadUsersAdmin();
+
+}
+
+
+/* ============================================================
+   ACTUALISER
+============================================================ */
+
+$("refreshBtn")
+    .addEventListener(
+        "click",
+        function(){
+
+            loadUsersAdmin();
+
+            showAdminMessage(
+                "✅ Liste actualisée.",
+                "success"
+            );
+
+        }
+    );
+
+
+/* ============================================================
+   DECONNEXION
+============================================================ */
+
+$("logoutBtn")
+    .addEventListener(
+        "click",
+        function(){
+
+            clearSession();
+
+
+            $("appView")
+                .classList
+                .add("hidden");
+
+
+            $("authView")
+                .classList
+                .remove("hidden");
+
+
+            switchTab(
+                "login"
+            );
+
+        }
+    );
+
+
+/* ============================================================
+   INITIALISATION
+============================================================ */
+
+function init(){
+
+    /*
+        Créer l'administrateur
+        principal s'il n'existe pas.
+    */
+
+    initAdmin();
+
+
+    /*
+        Vérifier si une session
+        existe déjà.
+    */
+
+    const session =
+        getSession();
+
+
+    if(!session){
+
+        return;
+
+    }
+
+
+    const users =
+        getUsers();
+
+
+    const user =
+        users.find(
+            u =>
+                u.id
+                ===
+                session.id
+        );
+
+
+    if(!user){
+
+        clearSession();
+
+        return;
+
+    }
+
+
+    showApp(
+        user
+    );
+
+}
+
+
+/* ============================================================
+   LANCEMENT
+============================================================ */
+
+init();
+
 </script>
+
 </body>
 </html>
+```
